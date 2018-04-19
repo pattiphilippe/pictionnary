@@ -5,37 +5,32 @@ package message.util;
  * @author Philippe
  */
 public class Table {
+    
+    private final String tableId;
+    private final boolean isOpen;
+    private final String drawerName;
+    private final String guesserName;
 
-    private final String id;
-    private boolean isOpen;
-    private final User[] players;
-
-    public Table(String id, boolean isOpen, User... players) throws Exception {
-        if (players.length > 2) {
-            throw new Exception("Too many players on the table!");
-        }
-        this.id = id;
+    public Table(String tableId, boolean isOpen, String... playerNames) {
+        this.tableId = tableId;
         this.isOpen = isOpen;
-        this.players = new User[2];
-
-        for (int i = 0; i < players.length; i++) {
-            this.players[i] = players[i];
-        }
+        this.drawerName = playerNames[0];
+        this.guesserName = playerNames[1];
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public boolean is(String id) {
-        return (id == null ? id == null : id.equals(id));
+    public String getTableId() {
+        return tableId;
     }
 
     public boolean isOpen() {
         return isOpen;
     }
 
-    public User[] getPlayers() {
-        return players;
+    public String getDrawerName() {
+        return drawerName;
+    }
+
+    public String getGuesserName() {
+        return guesserName;
     }
 }
