@@ -2,21 +2,23 @@ package client;
 
 import java.io.IOException;
 import java.util.List;
-import message.Message;
-import message.Type;
-import Model.Model;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import message.Message;
+import message.MessageCreate;
+import message.Type;
 import message.MessageProfile;
+import message.util.Table;
+import pictionnary.drawingPane.DrawingInfos;
 
 /**
  *
  * @author Philippe
  */
-public class Client extends AbstractClient {
+public class Client extends AbstractClient implements Model {
 
-    private final List<Model> tables;
+    private final List<Table> tables;
 
     /**
      * Constructs the client. Opens the connection with the server. Sends the
@@ -35,7 +37,8 @@ public class Client extends AbstractClient {
         this.tables = new ArrayList<>();
     }
 
-    public List<Model> getTables() {
+    @Override
+    public List<Table> getTables() {
         return tables;
     }
 
@@ -45,7 +48,7 @@ public class Client extends AbstractClient {
         Type type = message.getType();
         switch (type) {
             case TABLES:
-                updateTables((List<Model>) message.getContent());
+                updateTables((List<Table>) message.getContent());
                 notifyChange(message);
                 break;
             case ERROR:
@@ -77,21 +80,67 @@ public class Client extends AbstractClient {
         notifyObservers(message);
     }
 
-    private void updateTables(List<Model> tables) {
+    private void updateTables(List<Table> tables) {
         this.tables.clear();
-        System.out.println("Tables:");
-        for (Model t : tables) {
+        for (Table t : tables) {
             this.tables.add(t);
-            System.out.print(t.getId() + ", isOpen : " + t.isOpen() + " , players : ");
-            for (String p : t.getPlayers()) {
-                System.out.print("  " + p);
-            }
-            System.out.println("");
+        }
+        //TODO à supprimer
+        StringBuilder msg = new StringBuilder();
+        msg.append("Tables:").append("\n");
+        for (Table table : tables) {
+            msg.append(table.getTableId())
+                    .append(", isOpen : ").append(table.isOpen())
+                    .append(", drawer name : ").append(table.getDrawerName())
+                    .append(", guesser : ").append(table.getGuesserName())
+                    .append("\n");
+
+        }
+        System.out.println(msg);
+    }
+
+    @Override
+    public final void updateName(String name) {
+        try {
+            sendToServer(new MessageProfile(name));
+        } catch (IOException ex) {
+            //TODO gérer erreur
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private void updateName(String name) throws IOException {
-        sendToServer(new MessageProfile(name));
+    @Override
+    public void createTable(String tableId) {
+        try {
+            sendToServer(new MessageCreate(tableId));
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void joinTable(String tableId) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void guess(String guess) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void draw(DrawingInfos drawingInfos) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void exitTable() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void exit() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

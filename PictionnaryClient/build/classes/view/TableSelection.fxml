@@ -11,70 +11,70 @@
 <?import javafx.scene.text.Font?>
 
 <HBox xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1">
-   <children>
-      <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
-         <children>
-            <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Table Selection">
-               <font>
-                  <Font name="Berlin Sans FB" size="40.0" />
-               </font>
-               <VBox.margin>
-                  <Insets />
-               </VBox.margin>
-               <padding>
-                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-               </padding>
-            </Label>
-            <TableView fx:id="tables">
-              <columns>
-                <TableColumn resizable="false" text="Table " />
-                <TableColumn text="Is open" />
-                  <TableColumn text="Drawer" />
-                  <TableColumn text="Guesser" />
-                  <TableColumn />
-              </columns>
-               <VBox.margin>
-                  <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
-               </VBox.margin>
-               <columnResizePolicy>
-                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-               </columnResizePolicy>
-            </TableView>
-            <HBox alignment="CENTER_LEFT">
-               <children>
-                  <HBox maxWidth="1.7976931348623157E308" spacing="10.0" HBox.hgrow="ALWAYS">
-                     <children>
-                        <Label maxHeight="1.7976931348623157E308" text="Table name">
-                           <font>
-                              <Font name="Berlin Sans FB" size="15.0" />
-                           </font>
-                        </Label>
-                        <TextField fx:id="tableTfd">
-                           <HBox.margin>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                           </HBox.margin>
-                        </TextField>
-                        <Button fx:id="createBtn" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="Create Table">
-                           <HBox.margin>
-                              <Insets />
-                           </HBox.margin>
-                           <font>
-                              <Font name="Berlin Sans FB" size="18.0" />
-                           </font>
+    <children>
+        <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
+            <children>
+                <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Table Selection">
+                    <font>
+                        <Font name="Berlin Sans FB" size="40.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets />
+                    </VBox.margin>
+                    <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                    </padding>
+                </Label>
+                <TableView fx:id="tables">
+                    <columns>
+                        <TableColumn resizable="false" text="Table " />
+                        <TableColumn text="Is open" />
+                        <TableColumn text="Drawer" />
+                        <TableColumn text="Guesser" />
+                        <TableColumn />
+                    </columns>
+                    <VBox.margin>
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </VBox.margin>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                    </columnResizePolicy>
+                </TableView>
+                <HBox alignment="CENTER_LEFT">
+                    <children>
+                        <HBox maxWidth="1.7976931348623157E308" spacing="10.0" HBox.hgrow="ALWAYS">
+                            <children>
+                                <Label maxHeight="1.7976931348623157E308" text="Table name">
+                                    <font>
+                                        <Font name="Berlin Sans FB" size="15.0" />
+                                    </font>
+                                </Label>
+                                <TextField fx:id="tableTfd">
+                                    <HBox.margin>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </HBox.margin>
+                                </TextField>
+                                <Button fx:id="createBtn" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="Create Table">
+                                    <HBox.margin>
+                                        <Insets />
+                                    </HBox.margin>
+                                    <font>
+                                        <Font name="Berlin Sans FB" size="18.0" />
+                                    </font>
+                                </Button>
+                            </children>
+                        </HBox>
+                        <Button fx:id="exitBtn" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="Exit">
+                            <font>
+                                <Font name="Berlin Sans FB" size="17.0" />
+                            </font>
                         </Button>
-                     </children>
-                  </HBox>
-                  <Button fx:id="exitBtn" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="Exit">
-                     <font>
-                        <Font name="Berlin Sans FB" size="17.0" />
-                     </font>
-                  </Button>
-               </children>
-               <padding>
-                  <Insets bottom="30.0" left="15.0" right="15.0" top="20.0" />
-               </padding>
-            </HBox>
-         </children>
-      </VBox>
-   </children>
+                    </children>
+                    <padding>
+                        <Insets bottom="30.0" left="15.0" right="15.0" top="20.0" />
+                    </padding>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
 </HBox>

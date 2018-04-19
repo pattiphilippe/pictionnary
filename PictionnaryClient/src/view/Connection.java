@@ -5,21 +5,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import client.Client;
+import javafx.scene.layout.GridPane;
 
 /**
  *
  * @author Philippe
  */
-public class Connection extends Dialog<Boolean> {
+public class Connection extends GridPane {
 
     @FXML
     private TextField username;
@@ -37,19 +35,13 @@ public class Connection extends Dialog<Boolean> {
 
     public Connection() {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("Connection.fxml"));
+        loader.setRoot(this);
         loader.setController(this);
         try {
-            this.getDialogPane().setContent(loader.load());
+            loader.load();
         } catch (IOException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        this.setTitle("Pictionnary - Connection");
-        //TODO stage.getIcons().add(ICON);
-
-//        this.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-//        Node closeButton = this.getDialogPane().lookupButton(ButtonType.CLOSE);
-//        closeButton.setVisible(false);
-        
         error = new Alert(Alert.AlertType.ERROR);
         error.setTitle("Input Error");
     }
@@ -90,7 +82,7 @@ public class Connection extends Dialog<Boolean> {
         });
     }
 
-    Client getClient() {
+    public Client getClient() {
         return client;
     }
 

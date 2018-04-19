@@ -1,29 +1,25 @@
 package view;
 
-import Model.Model;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
+import message.util.Table;
 
 /**
  *
  * @author Philippe
  */
-class ModelItem {
+class TableItem {
 
     private final SimpleStringProperty tableId;
     private final SimpleBooleanProperty isOpen;
     private final SimpleStringProperty drawerName;
     private final SimpleStringProperty guesserName;
 
-    public ModelItem(Model table) {
-        this.tableId = new SimpleStringProperty(table.getId());
+    public TableItem(Table table) {
+        this.tableId = new SimpleStringProperty(table.getTableId());
         this.isOpen = new SimpleBooleanProperty(table.isOpen());
-        String[] playerNames = table.getPlayers();
-        if (playerNames[1] == null) {
-            playerNames[1] = "";
-        }
-        this.drawerName = new SimpleStringProperty(playerNames[0]);
-        this.guesserName = new SimpleStringProperty(playerNames[1]);
+        this.drawerName = new SimpleStringProperty(table.getDrawerName());
+        this.guesserName = new SimpleStringProperty(table.getGuesserName());
     }
 
     public String getTableId() {

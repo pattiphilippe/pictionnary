@@ -1,14 +1,13 @@
-package view;
+package Main;
 
-import java.io.IOException;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import client.Client;
+import view.Connection;
+import view.TableSelection;
 
 /**
  *
@@ -20,7 +19,6 @@ public class ClientFxMain extends Application {
     public void start(Stage primaryStage) throws Exception {
         Connection connectionPane = new Connection();
         Optional<Boolean> clientOpt = connectionPane.showAndWait();
-        //if (!(clientOpt.get() instanceof Boolean && clientOpt.get())) {
         if (clientOpt.get()) {
             Client client = connectionPane.getClient();
 

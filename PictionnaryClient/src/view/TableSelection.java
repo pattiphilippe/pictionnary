@@ -1,7 +1,5 @@
 package view;
 
-import Model.Model;
-import Model.Table;
 import java.io.IOException;
 import java.util.List;
 import java.util.Observable;
@@ -13,38 +11,43 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import message.Message;
-import message.MessageCreate;
 import message.Type;
 import client.Client;
+import client.Model;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.cell.PropertyValueFactory;
+import message.util.Table;
 
 /**
  *
  * @author Philippe
  */
-public class TableSelection extends Dialog<Boolean> implements Observer {
+public class TableSelection implements Observer {
 
-    private Message msg;
-    private final ObservableList<ModelItem> tableItems;
+    private Model model;
+    /**
+     * Should be Collections unmodifiableList<>()
+     */
+    private List<Table> tables;
+    private final ObservableList<TableItem> tableItems;
 
     @FXML
-    private TableView<Model> tables;
+    private TableView tableView;
     @FXML
-    private TableColumn<Model, String> tableCol;
+    private TableColumn<TableItem, String> tableIdCol;
     @FXML
-    private TableColumn<Model, Boolean> isOpenCol;
+    private TableColumn<TableItem, Boolean> isOpenCol;
     @FXML
-    private TableColumn<Model, String> drawerCol;
+    private TableColumn<TableItem, String> drawerCol;
     @FXML
-    private TableColumn<Model, String> guesserCol;
+    private TableColumn<TableItem, String> guesserCol;
     @FXML
-    private TableColumn<Model, Button> joinCol;
+    private TableColumn<TableItem, Button> joinCol;
     @FXML
     private TextField tableTfd;
     @FXML
@@ -56,36 +59,41 @@ public class TableSelection extends Dialog<Boolean> implements Observer {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("TableSelection.fxml"));
         loader.setController(this);
         try {
-            this.getDialogPane().setContent(loader.load());
+            loader.load();
         } catch (IOException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        this.setTitle("Pictionnary - Table Selection");
-        this.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-        Node closeButton = this.getDialogPane().lookupButton(ButtonType.CLOSE);
-        closeButton.setVisible(false);
+
         tableItems = FXCollections.observableArrayList();
+        tableView.setItems(tableItems);
+
+        tableIdCol = new TableColumn<>("Table Id");
+        tableIdCol.setCellValueFactory(new PropertyValueFactory<>("tableId"));
+
+        isOpenCol = new TableColumn<>("Is open");
+        isOpenCol.setCellValueFactory(new PropertyValueFactory<>("isOpen"));
+
+        drawerCol = new TableColumn<>("Drawer");
+        drawerCol.setCellValueFactory(new PropertyValueFactory<>("drawerName"));
+
+        guesserCol = new TableColumn<>("Guesser");
+        guesserCol.setCellValueFactory(new PropertyValueFactory<>("guesserName"));
     }
 
     @FXML
     private void initialize() {
         // TO INITIALIZE COMPONENTS WITH FXML
         createBtn.setOnAction(e -> {
-            msg = new MessageCreate(tableTfd.getText());
-            this.setResult(Boolean.TRUE);
+            model.createTable(tableTfd.getText());
         });
         exitBtn.setOnAction(e -> {
-            this.setResult(Boolean.FALSE);
+            model.exit();
         });
     }
 
     public void setModel(Client client) {
         client.addObserver(this);
-        updateTables(client.getTables());
-    }
-
-    public Message getMessage() {
-        return msg;
+        updateTableView();
     }
 
     @Override
@@ -93,16 +101,17 @@ public class TableSelection extends Dialog<Boolean> implements Observer {
         if (arg != null && arg instanceof Message) {
             Message msg = (Message) arg;
             if (msg.getType() == Type.TABLES) {
-                updateTables((List<Model>) msg.getContent());
+                updateTableView();
             }
         }
     }
 
-    private void updateTables(List<Model> tables) {
+    private void updateTableView() {
+        this.tables = model.getTables();
         tableItems.clear();
-        tables.forEach((model) -> {
-            this.tableItems.add(new ModelItem(model));
-        });
+        for (Table t : tables) {
+            tableItems.add(new TableItem(t));
+        }
     }
 
 }

@@ -10,5 +10,5 @@ package view.console;
  * @author Philippe
  */
 public class ClientConsole {
-    
+
 }
