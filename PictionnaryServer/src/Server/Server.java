@@ -1,16 +1,22 @@
 package Server;
 
+import Model.Model;
 import Model.Player;
+import Model.Table;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import message.Message;
+import message.MessageError;
 import message.MessageTables;
-import message.util.Tables;
 
 /**
  * Pictionnary Server
@@ -40,22 +46,23 @@ public class Server extends AbstractServer {
     }
 
     private int clientId; //to give to client... or username here
-    private final Tables tables;
+    private final List<Model> models;
 
     public Server() throws IOException {
         super(PORT);
-        tables = new Tables();
+
+        models = new ArrayList<>();
         clientId = 0;
         this.listen();
     }
 
     /**
-     * Return the list of tables.
+     * Return the list of models.
      *
-     * @return the list of tables.
+     * @return the list of models.
      */
-    public Tables getTables() {
-        return tables;
+    public List<Model> getModels() {
+        return Collections.unmodifiableList(models);
     }
 
     /**
@@ -92,27 +99,54 @@ public class Server extends AbstractServer {
 
     @Override
     protected void clientConnected(ConnectionToClient client) {
-        if (!validId(client.getName())) {
-            try {
-                clientException(client, new IllegalArgumentException("Username already choosen on the server!"));
-                client.close();
-            } catch (IOException ex) {
-                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else {
-            super.clientConnected(client);
-            client.setInfo(PLAYER_MAPINFO, new Player(client.getName()));
-            try {
-                client.sendToClient(new MessageTables(tables));
-            } catch (IOException ex) {
-                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        super.clientConnected(client);
+        System.out.println("ClientConnected with name : " + client.getName());
+        client.setInfo(PLAYER_MAPINFO, new Player(getNextId() + ""));
+        try {
+            client.sendToClient(new MessageTables(getModels()));
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     @Override
     protected void handleMessageFromClient(Object msg, ConnectionToClient client) {
-        //TODO IMPLEMENT
+        Message message = (Message) msg;
+        switch (message.getType()) {
+            case CREATE:
+                String tableId = (String) message.getContent();
+                if (!validTableId(tableId)) {
+                    clientException(client, new IllegalArgumentException("Table id already choosen!"));
+                } else {
+                    Player p = (Player) client.getInfo(PLAYER_MAPINFO);
+                    Model t = new Table(tableId, p);
+                    client.setInfo(PLAYER_MAPINFO, p);
+                    client.setInfo(TABLE_MAPINFO, t);
+                    models.add(t);
+                    sendToAllClients(new MessageTables(getModels()));
+                    setChanged();
+                    notifyObservers(msg);
+                }
+                break;
+            case PROFILE:
+                String name = (String) message.getContent();
+                if (validId(name)) {
+                    Player p = (Player) client.getInfo(PLAYER_MAPINFO);
+                    p.setUsername(name);
+                    client.setInfo(PLAYER_MAPINFO, p);
+                } else {
+                    clientException(client, new IllegalArgumentException("Username already choosen on the server!"));
+                    try {
+                        client.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                break;
+            default:
+                clientException(client, new IllegalArgumentException("Message not handled"));
+                break;
+        }
     }
 
     private boolean validId(String name) {
@@ -129,7 +163,22 @@ public class Server extends AbstractServer {
     @Override
     protected void clientException(ConnectionToClient client, Throwable ex) {
         super.clientException(client, ex);
-        //TODO envoyer message error
+        try {
+            client.sendToClient(new MessageError(ex));
+        } catch (IOException ex1) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex1);
+        }
+    }
+
+    private boolean validTableId(String tableId) {
+        for (Thread th : this.getClientConnections()) {
+            ConnectionToClient client = (ConnectionToClient) th;
+            Table t = (Table) client.getInfo(TABLE_MAPINFO);
+            if (t != null && t.is(tableId)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

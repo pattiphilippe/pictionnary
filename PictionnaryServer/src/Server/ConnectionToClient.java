@@ -228,11 +228,11 @@ public class ConnectionToClient extends Thread {
                     server.clientException(this, ex);
                 }
             }
-        } catch (Exception exception) {
+        } catch (IOException exception) {
             if (!readyToStop) {
                 try {
                     closeAll();
-                } catch (Exception ex) {
+                } catch (IOException ex) {
                 }
                 server.clientException(this, exception);
             }
