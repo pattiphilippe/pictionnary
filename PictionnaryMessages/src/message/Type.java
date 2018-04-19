@@ -6,5 +6,10 @@ package message;
  */
 public enum Type {
 
-    TABLES;
+    PROFILE,
+    TABLES,
+    CREATE,
+    JOIN,
+    ERROR,
+    EXIT;
 }

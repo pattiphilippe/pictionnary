@@ -18,6 +18,11 @@ public class User implements Serializable {
      */
     public static final User EVERYBODY = new User(0, "EVERYBODY");
 
+    /**
+     * Represents a user.
+     */
+    public static final User ANYBODY = new User(0, "ANYBODY");
+
     private final int id;
     private String name;
     private InetAddress address;

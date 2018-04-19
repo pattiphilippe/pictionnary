@@ -1,7 +1,8 @@
 package message;
 
+import Model.Model;
+import java.util.List;
 import message.util.User;
-import message.util.Tables;
 
 /**
  *
@@ -9,9 +10,12 @@ import message.util.Tables;
  */
 public class MessageTables implements Message {
 
-    private final Tables tables;
+    /**
+     * UnmodifiableList of the tables
+     */
+    private final List<Model> tables;
 
-    public MessageTables(Tables tables) {
+    public MessageTables(List<Model> tables) {
         this.tables = tables;
     }
 
