@@ -3,6 +3,7 @@ package Server;
 import Model.Model;
 import Model.Player;
 import Model.Table;
+import com.sun.org.apache.bcel.internal.generic.TABLESWITCH;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -14,6 +15,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import message.Message;
 import message.MessageError;
 import message.MessageTables;
@@ -46,12 +48,12 @@ public class Server extends AbstractServer {
     }
 
     private int clientId; //to give to client... or username here
-    private final List<Model> models;
+    private final List<Table> tables;
 
     public Server() throws IOException {
         super(PORT);
 
-        models = new ArrayList<>();
+        tables = new ArrayList<>();
         clientId = 0;
         this.listen();
     }
@@ -61,8 +63,10 @@ public class Server extends AbstractServer {
      *
      * @return the list of models.
      */
-    public List<Model> getModels() {
-        return Collections.unmodifiableList(models);
+    public List<message.util.Table> getTables() {
+        return this.tables.stream()
+                .map(model -> new message.util.Table(model.getId(), model.isOpen(), model.getPlayers()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -103,7 +107,7 @@ public class Server extends AbstractServer {
         System.out.println("ClientConnected with name : " + client.getName());
         client.setInfo(PLAYER_MAPINFO, new Player(getNextId() + ""));
         try {
-            client.sendToClient(new MessageTables(getModels()));
+            client.sendToClient(new MessageTables(getTables()));
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -114,38 +118,45 @@ public class Server extends AbstractServer {
         Message message = (Message) msg;
         switch (message.getType()) {
             case CREATE:
-                String tableId = (String) message.getContent();
-                if (!validTableId(tableId)) {
-                    clientException(client, new IllegalArgumentException("Table id already choosen!"));
-                } else {
-                    Player p = (Player) client.getInfo(PLAYER_MAPINFO);
-                    Model t = new Table(tableId, p);
-                    client.setInfo(PLAYER_MAPINFO, p);
-                    client.setInfo(TABLE_MAPINFO, t);
-                    models.add(t);
-                    sendToAllClients(new MessageTables(getModels()));
-                    setChanged();
-                    notifyObservers(msg);
-                }
+                createTable((String) message.getContent(), client);
                 break;
             case PROFILE:
-                String name = (String) message.getContent();
-                if (validId(name)) {
-                    Player p = (Player) client.getInfo(PLAYER_MAPINFO);
-                    p.setUsername(name);
-                    client.setInfo(PLAYER_MAPINFO, p);
-                } else {
-                    clientException(client, new IllegalArgumentException("Username already choosen on the server!"));
-                    try {
-                        client.close();
-                    } catch (IOException ex) {
-                        Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
+                updateName((String) message.getContent(), client);
                 break;
             default:
                 clientException(client, new IllegalArgumentException("Message not handled"));
                 break;
+        }
+    }
+
+    private void updateName(String name, ConnectionToClient client) {
+        if (validId(name)) {
+            Player p = (Player) client.getInfo(PLAYER_MAPINFO);
+            p.setUsername(name);
+            client.setInfo(PLAYER_MAPINFO, p);
+        } else {
+            clientException(client, new IllegalArgumentException("Username already choosen on the server!"));
+            try {
+                client.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    private void createTable(String tableId, ConnectionToClient client) {
+        if (!validTableId(tableId)) {
+            clientException(client, new IllegalArgumentException("Table id already choosen!"));
+        } else {
+            Player p = (Player) client.getInfo(PLAYER_MAPINFO);
+            Table t = new Table(tableId, p);
+            client.setInfo(PLAYER_MAPINFO, p);
+            client.setInfo(TABLE_MAPINFO, t);
+            tables.add(t);
+            Message msg = new MessageTables(getTables());
+            sendToAllClients(msg);
+            setChanged();
+            notifyObservers(msg);
         }
     }
 

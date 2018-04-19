@@ -1,6 +1,5 @@
 package View;
 
-import Model.Model;
 import Server.Server;
 import java.io.IOException;
 import java.util.List;
@@ -9,6 +8,7 @@ import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import message.Message;
+import message.util.Table;
 
 /**
  *
@@ -56,21 +56,24 @@ public class ServerConsole implements Observer {
                 case CREATE:
                 case TABLES:
                 case JOIN:
-                    printTables(((Server) o).getModels());
+                    printTables(((Server) o).getTables());
                 default:
                     break;
             }
         }
     }
 
-    private void printTables(List<Model> models) {
-        System.out.println("Tables:");
-        for (Model model : models) {
-            System.out.print(model.getId() + ", isOpen : " + model.isOpen() + " , players : ");
-            for (String p : model.getPlayers()) {
-                System.out.print("  " + p);
-            }
-            System.out.println("");
+    private void printTables(List<Table> tables) {
+        StringBuilder msg = new StringBuilder();
+        msg.append("Tables:").append("\n");
+        for (Table table : tables) {
+            msg.append(table.getTableId())
+                    .append(", isOpen : ").append(table.isOpen())
+                    .append(", drawer name : ").append(table.getDrawerName())
+                    .append(", guesser : ").append(table.getGuesserName())
+                    .append("\n");
+
         }
+        System.out.println(msg);
     }
 }
