@@ -13,7 +13,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import model.Client;
+import client.Client;
 
 /**
  *
@@ -46,9 +46,9 @@ public class Connection extends Dialog<Boolean> {
         this.setTitle("Pictionnary - Connection");
         //TODO stage.getIcons().add(ICON);
 
-        this.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-        Node closeButton = this.getDialogPane().lookupButton(ButtonType.CLOSE);
-        closeButton.setVisible(false);
+//        this.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+//        Node closeButton = this.getDialogPane().lookupButton(ButtonType.CLOSE);
+//        closeButton.setVisible(false);
         
         error = new Alert(Alert.AlertType.ERROR);
         error.setTitle("Input Error");
