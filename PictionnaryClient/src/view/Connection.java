@@ -72,7 +72,7 @@ public class Connection extends GridPane {
             }
         });
         cancelBtn.setOnAction(e -> {
-            //TODO
+            controller.exit();
         });
     }
 

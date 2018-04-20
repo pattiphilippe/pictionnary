@@ -58,7 +58,6 @@ public class TableSelection extends HBox implements Observer {
         } catch (IOException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
     @FXML
@@ -71,9 +70,7 @@ public class TableSelection extends HBox implements Observer {
         guesserCol.setCellValueFactory(new PropertyValueFactory<>("guesserName"));
 
         tableView.setEditable(true);
-        // TO INITIALIZE COMPONENTS WITH FXML
         createBtn.setOnAction(e -> {
-            System.out.println("in createBtnOnAction");
             controller.createTable(tableTfd.getText());
         });
         exitBtn.setOnAction(e -> {
@@ -98,10 +95,14 @@ public class TableSelection extends HBox implements Observer {
     }
 
     private void updateTableView() {
+        tableView.getItems().clear();
         for (Table t : tables) {
-            tableView.getItems().clear();
             // BUG pas possible avec observable list (voir Mr Lechien)
             tableView.getItems().add(new TableItem(t));
+        }
+        System.out.println("Table View items");
+        for (TableItem t : tableView.getItems()) {
+            System.out.println(t);
         }
     }
 
