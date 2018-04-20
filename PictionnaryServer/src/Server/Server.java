@@ -1,16 +1,13 @@
 package Server;
 
-import Model.Model;
 import Model.Player;
 import Model.Table;
-import com.sun.org.apache.bcel.internal.generic.TABLESWITCH;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
@@ -103,8 +100,8 @@ public class Server extends AbstractServer {
 
     @Override
     protected void clientConnected(ConnectionToClient client) {
+        //TODO print things to view
         super.clientConnected(client);
-        System.out.println("ClientConnected with name : " + client.getName());
         client.setInfo(PLAYER_MAPINFO, new Player(getNextId() + ""));
         try {
             client.sendToClient(new MessageTables(getTables()));
@@ -114,15 +111,33 @@ public class Server extends AbstractServer {
     }
 
     @Override
+    protected void clientException(ConnectionToClient client, Throwable ex) {
+        super.clientException(client, ex);
+        try {
+            client.sendToClient(new MessageError(ex));
+        } catch (IOException ex1) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex1);
+        }
+        setChanged();
+        notifyObservers(new MessageError(ex));
+    }
+
+    @Override
     protected void handleMessageFromClient(Object msg, ConnectionToClient client) {
         Message message = (Message) msg;
         switch (message.getType()) {
             case CREATE:
                 createTable((String) message.getContent(), client);
-                System.out.println("ERROR AFTER CREATE MSG");
                 break;
             case PROFILE:
                 updateName((String) message.getContent(), client);
+                break;
+            case EXIT:
+                try {
+                    client.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 break;
             default:
                 clientException(client, new IllegalArgumentException("Message not handled"));
@@ -146,6 +161,17 @@ public class Server extends AbstractServer {
         }
     }
 
+    private boolean validId(String name) {
+        for (Thread th : this.getClientConnections()) {
+            ConnectionToClient client = (ConnectionToClient) th;
+            Player p = (Player) client.getInfo(PLAYER_MAPINFO);
+            if (p != null && p.isUsername(name)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void createTable(String tableId, ConnectionToClient client) {
         if (!validTableId(tableId)) {
             System.out.println("table id non valid");
@@ -160,27 +186,6 @@ public class Server extends AbstractServer {
             sendToAllClients(msg);
             setChanged();
             notifyObservers(msg);
-        }
-    }
-
-    private boolean validId(String name) {
-        for (Thread th : this.getClientConnections()) {
-            ConnectionToClient client = (ConnectionToClient) th;
-            Player p = (Player) client.getInfo(PLAYER_MAPINFO);
-            if (p != null && p.isUsername(name)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    protected void clientException(ConnectionToClient client, Throwable ex) {
-        super.clientException(client, ex);
-        try {
-            client.sendToClient(new MessageError(ex));
-        } catch (IOException ex1) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex1);
         }
     }
 

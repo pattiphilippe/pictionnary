@@ -102,7 +102,7 @@ public abstract class AbstractServer extends Observable implements Runnable {
             return;
         }
         stopListening();
-
+        
         try {
             serverSocket.close();
         } finally {
@@ -117,13 +117,13 @@ public abstract class AbstractServer extends Observable implements Runnable {
                 }
                 serverSocket = null;
             }
-
+            
             try {
                 connectionListener.join(); // Wait for the end of listening thread.
             } catch (InterruptedException | NullPointerException ex) {
             }
             // When thread already dead.
-             // When thread already dead.
+            // When thread already dead.
 
             serverClosed();
         }
@@ -224,9 +224,9 @@ public abstract class AbstractServer extends Observable implements Runnable {
             if (serverSocket == null) {
                 serverSocket = new ServerSocket(getPort(), backlog);
             }
-
+            
             serverSocket.setSoTimeout(timeout);
-
+            
             connectionListener = new Thread(this);
             connectionListener.start();
         }
@@ -260,6 +260,12 @@ public abstract class AbstractServer extends Observable implements Runnable {
      */
     synchronized protected void clientDisconnected(
             ConnectionToClient client) {
+        for (int i = 0; i < threads.size(); i++) {
+            ConnectionToClient c = (ConnectionToClient) threads.get(i);
+            if (c.equals(client)) {
+                threads.remove(i);
+            }
+        }
     }
 
     /**
@@ -339,6 +345,7 @@ public abstract class AbstractServer extends Observable implements Runnable {
             try {
                 ((ConnectionToClient) clientThreadList1).sendToClient(msg);
             } catch (Exception ex) {
+                System.out.println("ERREUR sendToAllClients " + ex);
             }
         }
     }
@@ -368,7 +375,7 @@ public abstract class AbstractServer extends Observable implements Runnable {
     final public void run() {
         readyToStop = false;
         serverStarted();
-
+        
         try {
             // Repeatedly waits for a new client connection, accepts it, and
             // starts a new thread to handle data exchange.
@@ -380,9 +387,9 @@ public abstract class AbstractServer extends Observable implements Runnable {
                     // the data exchange, then add it to thread group
                     synchronized (this) {
                         if (!readyToStop) {
-                           ConnectionToClient client= new ConnectionToClient(
+                            ConnectionToClient client = new ConnectionToClient(
                                     clientSocket, this);
-                           this.threads.add(client);
+                            this.threads.add(client);
                         }
                     }
                 } catch (InterruptedIOException exception) {
@@ -402,5 +409,5 @@ public abstract class AbstractServer extends Observable implements Runnable {
             serverStopped();
         }
     }
-
+    
 }

@@ -57,6 +57,11 @@ public class ServerConsole implements Observer {
                 case TABLES:
                 case JOIN:
                     printTables(((Server) o).getTables());
+                    break;
+                case ERROR:
+                    Exception ex = (Exception) msg.getContent();
+                    System.out.println("Error : " + ex.getMessage());
+                    ex.printStackTrace();
                 default:
                     break;
             }

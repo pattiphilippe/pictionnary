@@ -101,7 +101,6 @@ public class ConnectionToClient extends Thread {
      * @exception IOException if an I/O error occur when closing the connection.
      */
     private void closeAll() throws IOException {
-        System.out.println("----> Server closeAll");
         try {
             if (clientSocket != null) {
                 clientSocket.close();
@@ -157,7 +156,6 @@ public class ConnectionToClient extends Thread {
      * @exception IOException if an error occurs when closing the socket.
      */
     final public void close() throws IOException {
-        System.out.println("------> client close");
         readyToStop = true; // Set the flag that tells the thread to stop
         closeAll();
     }

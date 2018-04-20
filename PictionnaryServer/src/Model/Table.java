@@ -9,7 +9,7 @@ import java.util.List;
  *
  * @author Philippe
  */
-public class Table extends Model implements Serializable{
+public class Table extends Model implements Serializable {
 
     private final String id;
     private boolean isOpen;
