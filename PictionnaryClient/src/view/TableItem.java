@@ -8,7 +8,7 @@ import message.util.Table;
  *
  * @author Philippe
  */
-class TableItem {
+public class TableItem {
 
     private final SimpleStringProperty tableId;
     private final SimpleBooleanProperty isOpen;
@@ -68,6 +68,11 @@ class TableItem {
 
     public SimpleStringProperty guesserNameProperty() {
         return guesserName;
+    }
+
+    @Override
+    public String toString() {
+        return "TableItem{" + "tableId=" + tableId + ", isOpen=" + isOpen + ", drawerName=" + drawerName + ", guesserName=" + guesserName + '}';
     }
 
 }

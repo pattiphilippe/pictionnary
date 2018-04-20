@@ -31,19 +31,15 @@
                     </padding>
                 </Label>
                 <TableView fx:id="tableView">
-                    <columns>
-                        <TableColumn resizable="false" text="Table " />
-                        <TableColumn text="Is open" />
-                        <TableColumn text="Drawer" />
-                        <TableColumn text="Guesser" />
-                        <TableColumn />
-                    </columns>
                     <VBox.margin>
                         <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
                     </VBox.margin>
-                    <columnResizePolicy>
-                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                    </columnResizePolicy>
+               <columns>
+                  <TableColumn fx:id="tableIdCol" prefWidth="75.0" text="Id" />
+                  <TableColumn fx:id="isOpenCol" prefWidth="75.0" text="open" />
+                  <TableColumn fx:id="drawerCol" prefWidth="75.0" text="drawer" />
+                  <TableColumn fx:id="guesserCol" prefWidth="75.0" text="guesser" />
+               </columns>
                 </TableView>
                 <HBox alignment="CENTER_LEFT">
                     <children>

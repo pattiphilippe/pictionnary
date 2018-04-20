@@ -32,10 +32,9 @@ public class TableSelection extends HBox implements Observer {
      * Should be Collections unmodifiableList<>()
      */
     private List<Table> tables;
-    private final ObservableList<TableItem> tableItems;
 
     @FXML
-    private TableView tableView;
+    private TableView<TableItem> tableView;
     @FXML
     private TableColumn<TableItem, String> tableIdCol;
     @FXML
@@ -44,8 +43,6 @@ public class TableSelection extends HBox implements Observer {
     private TableColumn<TableItem, String> drawerCol;
     @FXML
     private TableColumn<TableItem, String> guesserCol;
-    @FXML
-    private TableColumn<TableItem, Button> joinCol;
     @FXML
     private TextField tableTfd;
     @FXML
@@ -64,24 +61,18 @@ public class TableSelection extends HBox implements Observer {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        tableItems = FXCollections.observableArrayList();
-        tableView.setItems(tableItems);
-
-        tableIdCol = new TableColumn<>("Table Id");
-        tableIdCol.setCellValueFactory(new PropertyValueFactory<>("tableId"));
-
-        isOpenCol = new TableColumn<>("Is open");
-        isOpenCol.setCellValueFactory(new PropertyValueFactory<>("isOpen"));
-
-        drawerCol = new TableColumn<>("Drawer");
-        drawerCol.setCellValueFactory(new PropertyValueFactory<>("drawerName"));
-
-        guesserCol = new TableColumn<>("Guesser");
-        guesserCol.setCellValueFactory(new PropertyValueFactory<>("guesserName"));
     }
 
     @FXML
     private void initialize() {
+        tableIdCol.setCellValueFactory(new PropertyValueFactory<>("tableId"));
+        isOpenCol.setCellValueFactory(new PropertyValueFactory<>("isOpen"));
+
+        drawerCol.setCellValueFactory(new PropertyValueFactory<>("drawerName"));
+
+        guesserCol.setCellValueFactory(new PropertyValueFactory<>("guesserName"));
+
+        tableView.setEditable(true);
         // TO INITIALIZE COMPONENTS WITH FXML
         createBtn.setOnAction(e -> {
             System.out.println("in createBtnOnAction");
@@ -93,7 +84,6 @@ public class TableSelection extends HBox implements Observer {
     }
 
     public void setModel(Client client) {
-        System.out.println("TableSelection is connected : " + client.isConnected());
         client.addObserver(this);
         this.tables = client.getTables();
         updateTableView();
@@ -110,9 +100,9 @@ public class TableSelection extends HBox implements Observer {
     }
 
     private void updateTableView() {
-        tableItems.clear();
         for (Table t : tables) {
-            tableItems.add(new TableItem(t));
+            tableView.getItems().clear();
+            tableView.getItems().add(new TableItem(t));
         }
     }
 

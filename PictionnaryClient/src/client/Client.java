@@ -3,8 +3,6 @@ package client;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import message.Message;
 import message.MessageCreate;
 import message.Type;
@@ -35,7 +33,6 @@ public class Client extends AbstractClient implements Model {
         openConnection();
         updateName(name);
         this.tables = new ArrayList<>();
-        System.out.println("isconnected : " + isConnected());
     }
 
     @Override
@@ -45,8 +42,8 @@ public class Client extends AbstractClient implements Model {
 
     @Override
     protected void handleMessageFromServer(Object msg) {
-        System.out.println("in handle isconnected : " + isConnected());
         Message message = (Message) msg;
+        System.out.println("message received of type : " + message.getType());
         Type type = message.getType();
         switch (type) {
             case TABLES:
@@ -66,7 +63,6 @@ public class Client extends AbstractClient implements Model {
             default:
                 throw new IllegalArgumentException("Message type unknown " + type);
         }
-        System.out.println("after handle isconnected : " + isConnected());
     }
 
     /**
@@ -104,13 +100,13 @@ public class Client extends AbstractClient implements Model {
 
     @Override
     public final void updateName(String name) throws IOException {
+        System.out.println("----> client send profile");
         sendToServer(new MessageProfile(name));
-        System.out.println("after update name isconnected : " + isConnected());
     }
 
     @Override
     public void createTable(String tableId) throws IOException {
-        System.out.println("Client::createTable isconnected : " + isConnected());
+        System.out.println("----> client send table");
         sendToServer(new MessageCreate(tableId));
     }
 

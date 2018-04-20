@@ -1,7 +1,6 @@
 package Controller;
 
 import client.Client;
-import client.Model;
 import java.io.IOException;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -21,7 +20,6 @@ public class Controller implements Runnable {
     private final TableSelection tableSelection;
     private final Stage primaryStage;
     private final Alert error;
-    private final Scene scene;
 
     public Controller(Stage primaryStage) {
         this.connection = new Connection();
@@ -30,12 +28,11 @@ public class Controller implements Runnable {
         this.tableSelection.setController(this);
         this.primaryStage = primaryStage;
         this.error = new Alert(Alert.AlertType.ERROR);
-        this.scene = new Scene(connection);
-        this.primaryStage.setScene(scene);
     }
 
     @Override
     public void run() {
+        primaryStage.setScene(new Scene(connection));
         primaryStage.show();
     }
 
@@ -46,11 +43,7 @@ public class Controller implements Runnable {
             showError("Connection error", ex);
         }
         tableSelection.setModel(client);
-        System.out.println("after client creation is connected : " + client.isConnected());
-        scene.setRoot(tableSelection);
-        System.out.println("after new Scene is connected : " + client.isConnected());
-        this.primaryStage.setScene(scene);
-        System.out.println("after set Scene is connected : " + client.isConnected());
+        this.primaryStage.setScene(new Scene(tableSelection));
     }
 
     public void exit() {
@@ -64,7 +57,6 @@ public class Controller implements Runnable {
     }
 
     public void createTable(String tableId) {
-        System.out.println("before creating table is connected : " + client.isConnected());
         try {
             client.createTable(tableId);
         } catch (IOException ex) {
