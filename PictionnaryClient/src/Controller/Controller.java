@@ -1,11 +1,14 @@
 package Controller;
 
 import client.Client;
+import client.Model;
 import java.io.IOException;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import view.Connection;
+import view.MyAlert;
 import view.TableSelection;
 
 /**
@@ -14,12 +17,12 @@ import view.TableSelection;
  */
 public class Controller implements Runnable {
 
-    //TODO CHANGE TO MODEL
+    //TODO change to model
     private Client client;
     private final Connection connection;
     private final TableSelection tableSelection;
     private final Stage primaryStage;
-    private final Alert error;
+    private final MyAlert error;
 
     public Controller(Stage primaryStage) {
         this.connection = new Connection();
@@ -27,7 +30,7 @@ public class Controller implements Runnable {
         this.tableSelection = new TableSelection();
         this.tableSelection.setController(this);
         this.primaryStage = primaryStage;
-        this.error = new Alert(Alert.AlertType.ERROR);
+        this.error = new MyAlert(Alert.AlertType.ERROR);
     }
 
     @Override
@@ -39,18 +42,23 @@ public class Controller implements Runnable {
     public void connect(String host, int port, String username) {
         try {
             client = new Client(host, port, username);
+            client.addObserver(error);
+            tableSelection.setModel(client);
+            this.primaryStage.setScene(new Scene(tableSelection));
         } catch (IOException ex) {
-            showError("Connection error", ex);
+            exception("Connection error", ex);
         }
-        tableSelection.setModel(client);
-        this.primaryStage.setScene(new Scene(tableSelection));
     }
 
     public void exit() {
-        client.exit();
+        if (client.isConnected()) {
+            client.exit();
+        }
+        primaryStage.close();
+        Platform.exit();
     }
 
-    private void showError(String context, IOException ex) {
+    public void exception(String context, Exception ex) {
         error.setHeaderText(context);
         error.setContentText(ex.getMessage());
         error.showAndWait();
@@ -60,7 +68,7 @@ public class Controller implements Runnable {
         try {
             client.createTable(tableId);
         } catch (IOException ex) {
-            showError("Creating Table error", ex);
+            exception("Creating Table error", ex);
         }
     }
 

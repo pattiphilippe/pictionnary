@@ -3,8 +3,11 @@ package client;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import message.Message;
 import message.MessageCreate;
+import message.MessageExit;
 import message.Type;
 import message.MessageProfile;
 import message.util.Table;
@@ -51,17 +54,10 @@ public class Client extends AbstractClient implements Model {
                 notifyChange(message);
                 break;
             case ERROR:
-            //show error with alert
-            //check if socket not null
-//                if (!isConnected()) {
-//                    try {
-//                        quit();
-//                    } catch (IOException ex) {
-//                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                }
+                setChanged();
+                notifyObservers(msg);
             default:
-                throw new IllegalArgumentException("Message type unknown " + type);
+               throw new IllegalArgumentException("Message type unknown " + type);
         }
     }
 
@@ -84,29 +80,15 @@ public class Client extends AbstractClient implements Model {
         for (Table t : tables) {
             this.tables.add(t);
         }
-        //TODO à supprimer
-        StringBuilder msg = new StringBuilder();
-        msg.append("Tables:").append("\n");
-        for (Table table : tables) {
-            msg.append(table.getTableId())
-                    .append(", isOpen : ").append(table.isOpen())
-                    .append(", drawer name : ").append(table.getDrawerName())
-                    .append(", guesser : ").append(table.getGuesserName())
-                    .append("\n");
-
-        }
-        System.out.println(msg);
     }
 
     @Override
     public final void updateName(String name) throws IOException {
-        System.out.println("----> client send profile");
         sendToServer(new MessageProfile(name));
     }
 
     @Override
     public void createTable(String tableId) throws IOException {
-        System.out.println("----> client send table");
         sendToServer(new MessageCreate(tableId));
     }
 
@@ -132,7 +114,11 @@ public class Client extends AbstractClient implements Model {
 
     @Override
     public void exit() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            sendToServer(new MessageExit());
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
 }

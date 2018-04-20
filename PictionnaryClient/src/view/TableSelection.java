@@ -15,8 +15,6 @@ import javafx.scene.control.TextField;
 import message.Message;
 import message.Type;
 import client.Client;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
@@ -102,6 +100,7 @@ public class TableSelection extends HBox implements Observer {
     private void updateTableView() {
         for (Table t : tables) {
             tableView.getItems().clear();
+            // BUG pas possible avec observable list (voir Mr Lechien)
             tableView.getItems().add(new TableItem(t));
         }
     }
