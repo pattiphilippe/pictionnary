@@ -1,5 +1,6 @@
 package client;
 
+import java.io.IOException;
 import java.util.List;
 import message.util.Table;
 import pictionnary.drawingPane.DrawingInfos;
@@ -12,9 +13,9 @@ public interface Model {
 
     public List<Table> getTables();
 
-    public void updateName(String name);
+    public void updateName(String name) throws IOException;
 
-    public void createTable(String tableId);
+    public void createTable(String tableId) throws IOException;
 
     public void joinTable(String tableId);
 

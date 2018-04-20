@@ -1,5 +1,6 @@
 package view;
 
+import Controller.Controller;
 import java.io.IOException;
 import java.util.List;
 import java.util.Observable;
@@ -8,28 +9,25 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import message.Message;
 import message.Type;
 import client.Client;
-import client.Model;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import message.util.Table;
 
 /**
  *
  * @author Philippe
  */
-public class TableSelection implements Observer {
+public class TableSelection extends HBox implements Observer {
 
-    private Model model;
     /**
      * Should be Collections unmodifiableList<>()
      */
@@ -54,9 +52,11 @@ public class TableSelection implements Observer {
     private Button createBtn;
     @FXML
     private Button exitBtn;
+    private Controller controller;
 
     public TableSelection() {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("TableSelection.fxml"));
+        loader.setRoot(this);
         loader.setController(this);
         try {
             loader.load();
@@ -84,15 +84,18 @@ public class TableSelection implements Observer {
     private void initialize() {
         // TO INITIALIZE COMPONENTS WITH FXML
         createBtn.setOnAction(e -> {
-            model.createTable(tableTfd.getText());
+            System.out.println("in createBtnOnAction");
+            controller.createTable(tableTfd.getText());
         });
         exitBtn.setOnAction(e -> {
-            model.exit();
+            controller.exit();
         });
     }
 
     public void setModel(Client client) {
+        System.out.println("TableSelection is connected : " + client.isConnected());
         client.addObserver(this);
+        this.tables = client.getTables();
         updateTableView();
     }
 
@@ -107,11 +110,14 @@ public class TableSelection implements Observer {
     }
 
     private void updateTableView() {
-        this.tables = model.getTables();
         tableItems.clear();
         for (Table t : tables) {
             tableItems.add(new TableItem(t));
         }
+    }
+
+    public void setController(Controller controller) {
+        this.controller = controller;
     }
 
 }

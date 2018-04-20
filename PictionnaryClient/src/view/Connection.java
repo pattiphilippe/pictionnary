@@ -1,5 +1,6 @@
 package view;
 
+import Controller.Controller;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,9 +30,10 @@ public class Connection extends GridPane {
     private Button connectBtn;
     @FXML
     private Button cancelBtn;
+    //TODO check if needed
     private final Alert error;
 
-    private Client client;
+    private Controller controller;
 
     public Connection() {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("Connection.fxml"));
@@ -67,23 +69,16 @@ public class Connection extends GridPane {
                 error.setContentText("Insert a username and ask the admin for the port.");
                 error.showAndWait();
             } else {
-                try {
-                    client = new Client(host.getText(), Integer.parseInt(portTxt), username.getText());
-                    this.setResult(Boolean.TRUE);
-                } catch (IOException ex) {
-                    error.setHeaderText("Connection error!");
-                    error.setContentText(ex.getMessage());
-                    error.showAndWait();
-                }
+                controller.connect(host.getText(), Integer.parseInt(portTxt), username.getText());
             }
         });
         cancelBtn.setOnAction(e -> {
-            this.setResult(Boolean.FALSE);
+            //TODO
         });
     }
 
-    public Client getClient() {
-        return client;
+    public void setController(Controller controller) {
+        this.controller = controller;
     }
 
 }

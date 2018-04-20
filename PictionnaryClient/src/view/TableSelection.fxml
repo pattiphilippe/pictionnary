@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
@@ -10,7 +15,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<HBox xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root type="HBox" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
             <children>
@@ -25,7 +30,7 @@
                         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                     </padding>
                 </Label>
-                <TableView fx:id="tables">
+                <TableView fx:id="tableView">
                     <columns>
                         <TableColumn resizable="false" text="Table " />
                         <TableColumn text="Is open" />
@@ -77,4 +82,4 @@
             </children>
         </VBox>
     </children>
-</HBox>
+</fx:root>

@@ -35,6 +35,7 @@ public class Client extends AbstractClient implements Model {
         openConnection();
         updateName(name);
         this.tables = new ArrayList<>();
+        System.out.println("isconnected : " + isConnected());
     }
 
     @Override
@@ -44,6 +45,7 @@ public class Client extends AbstractClient implements Model {
 
     @Override
     protected void handleMessageFromServer(Object msg) {
+        System.out.println("in handle isconnected : " + isConnected());
         Message message = (Message) msg;
         Type type = message.getType();
         switch (type) {
@@ -52,18 +54,19 @@ public class Client extends AbstractClient implements Model {
                 notifyChange(message);
                 break;
             case ERROR:
-                //show error with alert
-                //check if socket not null
-                if (!isConnected()) {
-                    try {
-                        quit();
-                    } catch (IOException ex) {
-                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
+            //show error with alert
+            //check if socket not null
+//                if (!isConnected()) {
+//                    try {
+//                        quit();
+//                    } catch (IOException ex) {
+//                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                }
             default:
                 throw new IllegalArgumentException("Message type unknown " + type);
         }
+        System.out.println("after handle isconnected : " + isConnected());
     }
 
     /**
@@ -100,22 +103,15 @@ public class Client extends AbstractClient implements Model {
     }
 
     @Override
-    public final void updateName(String name) {
-        try {
-            sendToServer(new MessageProfile(name));
-        } catch (IOException ex) {
-            //TODO gérer erreur
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public final void updateName(String name) throws IOException {
+        sendToServer(new MessageProfile(name));
+        System.out.println("after update name isconnected : " + isConnected());
     }
 
     @Override
-    public void createTable(String tableId) {
-        try {
-            sendToServer(new MessageCreate(tableId));
-        } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public void createTable(String tableId) throws IOException {
+        System.out.println("Client::createTable isconnected : " + isConnected());
+        sendToServer(new MessageCreate(tableId));
     }
 
     @Override
