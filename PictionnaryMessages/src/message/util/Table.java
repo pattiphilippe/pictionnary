@@ -1,10 +1,12 @@
 package message.util;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Philippe
  */
-public class Table {
+public class Table implements Serializable{
     
     private final String tableId;
     private final boolean isOpen;
