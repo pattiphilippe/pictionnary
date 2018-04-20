@@ -119,6 +119,7 @@ public class Server extends AbstractServer {
         switch (message.getType()) {
             case CREATE:
                 createTable((String) message.getContent(), client);
+                System.out.println("ERROR AFTER CREATE MSG");
                 break;
             case PROFILE:
                 updateName((String) message.getContent(), client);
@@ -135,6 +136,7 @@ public class Server extends AbstractServer {
             p.setUsername(name);
             client.setInfo(PLAYER_MAPINFO, p);
         } else {
+            System.out.println("----> updateName failed");
             clientException(client, new IllegalArgumentException("Username already choosen on the server!"));
             try {
                 client.close();
@@ -146,6 +148,7 @@ public class Server extends AbstractServer {
 
     private void createTable(String tableId, ConnectionToClient client) {
         if (!validTableId(tableId)) {
+            System.out.println("table id non valid");
             clientException(client, new IllegalArgumentException("Table id already choosen!"));
         } else {
             Player p = (Player) client.getInfo(PLAYER_MAPINFO);
