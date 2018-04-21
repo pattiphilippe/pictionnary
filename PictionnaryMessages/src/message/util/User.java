@@ -25,6 +25,7 @@ public class User implements Serializable {
 
     private final int id;
     private String name;
+    
     private InetAddress address;
 
     /**

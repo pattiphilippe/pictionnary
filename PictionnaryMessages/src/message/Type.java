@@ -10,6 +10,12 @@ public enum Type {
     TABLES,
     CREATE,
     JOIN,
+    //TODO
+    GAME_INIT,
+    //TODO
+    DRAW,
+    //TODO
+    GUESS,
     ERROR,
     EXIT;
 }
