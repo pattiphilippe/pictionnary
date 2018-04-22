@@ -6,8 +6,8 @@ import java.io.Serializable;
  *
  * @author Philippe
  */
-public class Table implements Serializable{
-    
+public class Table implements Serializable {
+
     private final String tableId;
     private final boolean isOpen;
     private final String drawerName;

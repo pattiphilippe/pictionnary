@@ -11,10 +11,9 @@ public enum Type {
     CREATE,
     JOIN,
     GAME_INIT,
-    //TODO
     DRAW_LINE,
-    //TODO
     GUESS,
+    WON,
     ERROR,
     EXIT,
     EXIT_TABLE;
