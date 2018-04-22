@@ -15,6 +15,8 @@ import javafx.scene.control.TextField;
 import message.Message;
 import message.Type;
 import client.Client;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
@@ -30,6 +32,7 @@ public class TableSelection extends HBox implements Observer {
      * Should be Collections unmodifiableList<>()
      */
     private List<Table> tables;
+    private boolean isModelSet;
 
     @FXML
     private TableView<TableItem> tableView;
@@ -41,6 +44,8 @@ public class TableSelection extends HBox implements Observer {
     private TableColumn<TableItem, String> drawerCol;
     @FXML
     private TableColumn<TableItem, String> guesserCol;
+    @FXML
+    private TableColumn<TableItem, Boolean> joinCol;
     @FXML
     private TextField tableTfd;
     @FXML
@@ -58,16 +63,17 @@ public class TableSelection extends HBox implements Observer {
         } catch (IOException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
         }
+        this.isModelSet = false;
     }
 
     @FXML
     private void initialize() {
         tableIdCol.setCellValueFactory(new PropertyValueFactory<>("tableId"));
         isOpenCol.setCellValueFactory(new PropertyValueFactory<>("isOpen"));
-
         drawerCol.setCellValueFactory(new PropertyValueFactory<>("drawerName"));
-
         guesserCol.setCellValueFactory(new PropertyValueFactory<>("guesserName"));
+        joinCol.setCellValueFactory(val -> new SimpleBooleanProperty(val.getValue() != null));
+        joinCol.setCellFactory(val -> new ButtonCell(tableView, controller));
 
         tableView.setEditable(true);
         createBtn.setOnAction(e -> {
@@ -82,6 +88,7 @@ public class TableSelection extends HBox implements Observer {
         client.addObserver(this);
         this.tables = client.getTables();
         updateTableView();
+        isModelSet = true;
     }
 
     @Override
@@ -89,7 +96,7 @@ public class TableSelection extends HBox implements Observer {
         if (arg != null && arg instanceof Message) {
             Message msg = (Message) arg;
             if (msg.getType() == Type.TABLES) {
-                updateTableView();
+                Platform.runLater(() -> updateTableView());
             }
         }
     }
@@ -97,17 +104,18 @@ public class TableSelection extends HBox implements Observer {
     private void updateTableView() {
         tableView.getItems().clear();
         for (Table t : tables) {
+            //TODO check bug with run later
             // BUG pas possible avec observable list (voir Mr Lechien)
             tableView.getItems().add(new TableItem(t));
-        }
-        System.out.println("Table View items");
-        for (TableItem t : tableView.getItems()) {
-            System.out.println(t);
         }
     }
 
     public void setController(Controller controller) {
         this.controller = controller;
+    }
+
+    public boolean isIsModelSet() {
+        return isModelSet;
     }
 
 }

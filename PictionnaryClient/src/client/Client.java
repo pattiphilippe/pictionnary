@@ -3,11 +3,14 @@ package client;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import message.Message;
 import message.MessageCreate;
 import message.MessageExit;
+import message.MessageExitTable;
+import message.MessageJoin;
 import message.Type;
 import message.MessageProfile;
 import message.util.Table;
@@ -40,7 +43,7 @@ public class Client extends AbstractClient implements Model {
 
     @Override
     public List<Table> getTables() {
-        return tables;
+        return Collections.unmodifiableList(tables);
     }
 
     @Override
@@ -51,13 +54,13 @@ public class Client extends AbstractClient implements Model {
         switch (type) {
             case TABLES:
                 updateTables((List<Table>) message.getContent());
+            case PROFILE:
+            case GAME_INIT:
+            case ERROR:
                 notifyChange(message);
                 break;
-            case ERROR:
-                setChanged();
-                notifyObservers(msg);
             default:
-               throw new IllegalArgumentException("Message type unknown " + type);
+                throw new IllegalArgumentException("Message type unknown " + type);
         }
     }
 
@@ -93,8 +96,8 @@ public class Client extends AbstractClient implements Model {
     }
 
     @Override
-    public void joinTable(String tableId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void joinTable(String tableId) throws IOException {
+        sendToServer(new MessageJoin(tableId));
     }
 
     @Override
@@ -108,8 +111,8 @@ public class Client extends AbstractClient implements Model {
     }
 
     @Override
-    public void exitTable() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void exitTable() throws IOException {
+        sendToServer(new MessageExitTable());
     }
 
     @Override

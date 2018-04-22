@@ -4,9 +4,13 @@ import Controller.Controller;
 import client.Client;
 import java.util.Observable;
 import java.util.Observer;
+import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import message.Message;
+import message.Type;
 import pictionnary.drawingPane.DrawingPaneControl;
 
 /**
@@ -16,7 +20,7 @@ import pictionnary.drawingPane.DrawingPaneControl;
 public class DrawerView extends VBox implements Observer {
 
     private final BasePictionnaryView baseView;
-    private Label word;
+    private final Label word;
     private final DrawingPaneControl drawingPane;
     private Controller controller;
 
@@ -27,9 +31,9 @@ public class DrawerView extends VBox implements Observer {
         baseView.setCenter(drawingPane);
         baseView.setGuessTitle("To draw :");
         this.getChildren().add(baseView);
-
-        VBox wordToGuessBox = baseView.getWordToGuessBox();
-        wordToGuessBox.getChildren().add(new Label("Test"));
+        word.setAlignment(Pos.CENTER);
+        word.setMaxWidth(Double.MAX_VALUE);
+        word.setFont(new Font("Berlin Sans FB", 17));
     }
 
     public void setController(Controller controller) {
@@ -41,7 +45,14 @@ public class DrawerView extends VBox implements Observer {
     public void update(Observable o, Object arg) {
         if (arg instanceof Message) {
             Message msg = (Message) arg;
-            //TODO implement
+            Platform.runLater(() -> {
+                switch (msg.getType()) {
+                    case GAME_INIT:
+                        word.setText((String) msg.getContent());
+                        baseView.addToWordToGuessBox(word);
+                        break;
+                }
+            });
         }
     }
 

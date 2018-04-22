@@ -17,13 +17,13 @@ public interface Model {
 
     public void createTable(String tableId) throws IOException;
 
-    public void joinTable(String tableId);
+    public void joinTable(String tableId) throws IOException;
 
     public void guess(String guess);
 
     public void draw(DrawingInfos drawingInfos);
 
-    public void exitTable();
+    public void exitTable() throws IOException;
 
     public void exit();
 }
