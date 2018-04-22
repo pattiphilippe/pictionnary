@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javafx.scene.input.MouseEvent;
 import message.Message;
 import message.MessageCreate;
+import message.MessageDrawLine;
 import message.MessageExit;
 import message.MessageExitTable;
 import message.MessageJoin;
@@ -57,6 +57,7 @@ public class Client extends AbstractClient implements Model {
             case PROFILE:
             case GAME_INIT:
             case ERROR:
+            case DRAW_LINE:
                 notifyChange(message);
                 break;
             default:
@@ -106,8 +107,10 @@ public class Client extends AbstractClient implements Model {
     }
 
     @Override
-    public void draw(DrawingInfos drawingInfos) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void drawLine(DrawingInfos drawingInfos) throws IOException {
+        System.out.println("Client::drawLine()");
+        Message msg = new MessageDrawLine(drawingInfos);
+        sendToServer(msg);
     }
 
     @Override
@@ -116,12 +119,8 @@ public class Client extends AbstractClient implements Model {
     }
 
     @Override
-    public void exit() {
-        try {
-            sendToServer(new MessageExit());
-        } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public void exit() throws IOException {
+        sendToServer(new MessageExit());
     }
 
 }

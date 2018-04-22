@@ -3,6 +3,7 @@ package view;
 import Controller.Controller;
 import java.util.Observable;
 import java.util.Observer;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -10,6 +11,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import message.Message;
+import pictionnary.drawingPane.DrawingInfos;
 import pictionnary.drawingPane.DrawingPane;
 
 /**
@@ -25,18 +27,20 @@ public class GuesserView extends VBox implements Observer {
     private Controller controller;
 
     public GuesserView(Controller controller) {
+        this.setPadding(new Insets(15));
         this.baseView = new BasePictionnaryView();
         this.drawingPane = new DrawingPane();
-        this.drawingPane.setPadding(new Insets(15));
         this.drawingPane.setModifiable(false);
         this.baseView.setCenter(drawingPane);
         this.baseView.setGuessTitle("To guess :");
         this.getChildren().add(baseView);
         this.guess = new TextField();
         this.guessBtn = new Button("OK");
+        this.guessBtn.setWrapText(true);
         this.guessBtn.setFont(new Font("Berlin Sans FB", 17));
         guessBtn.setOnAction(e -> {
-            this.controller.guess(guess.getText() + "");
+            //TODO BUG guess is null
+            this.controller.guess(guess.getText());
         });
         HBox guessBox = new HBox(10, guess, guessBtn);
 
@@ -52,7 +56,15 @@ public class GuesserView extends VBox implements Observer {
     public void update(Observable o, Object arg) {
         if (arg instanceof Message) {
             Message msg = (Message) arg;
-            //TODO implement
+            Platform.runLater(() -> {
+                switch (msg.getType()) {
+                    case DRAW_LINE:
+                        System.out.println("before draw line");
+                        drawingPane.addLine((DrawingInfos) msg.getContent());
+                        System.out.println("after draw line");
+                        break;
+                }
+            });
         }
     }
 }

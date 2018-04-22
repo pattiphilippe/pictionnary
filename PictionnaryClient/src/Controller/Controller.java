@@ -10,6 +10,7 @@ import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import message.Message;
 import message.util.Player;
+import pictionnary.drawingPane.DrawingInfos;
 import view.Connection;
 import view.DrawerView;
 import view.GuesserView;
@@ -67,7 +68,7 @@ public class Controller implements Runnable, Observer {
                         updateView((Player) msg.getContent());
                         break;
                     case ERROR:
-                        //TODO gamestate enum : context
+                        //TODO gamestate enum : context or check if error Context useful
                         exception(errorContext, (Exception) msg.getContent());
                         break;
                     default:
@@ -103,7 +104,11 @@ public class Controller implements Runnable, Observer {
 
     public void exit() {
         if (client != null && client.isConnected()) {
-            client.exit();
+            try {
+                client.exit();
+            } catch (IOException ex) {
+                exception("Exit Server error", ex);
+            }
         }
         //primaryStage.close();
         Platform.exit();
@@ -165,8 +170,7 @@ public class Controller implements Runnable, Observer {
         primaryStage.setScene(guesserScene);
     }
 
-    //TODO change to private
-    public void setTablesView() {
+    private void setTablesView() {
         this.errorContext = "Table Selection Error";
         primaryStage.setTitle("Pictionnary - Table Selection");
         primaryStage.setScene(tableScene);
@@ -176,6 +180,14 @@ public class Controller implements Runnable, Observer {
         this.errorContext = "Connection Error";
         primaryStage.setTitle("Pictionnary - Connection");
         primaryStage.setScene(new Scene(connection));
+    }
+
+    public void drawLine(DrawingInfos oldVal) {
+        try {
+            client.drawLine(oldVal);
+        } catch (IOException ex) {
+            exception("Drawing Line exception", ex);
+        }
     }
 
 }

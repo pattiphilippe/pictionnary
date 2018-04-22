@@ -21,9 +21,9 @@ public interface Model {
 
     public void guess(String guess);
 
-    public void draw(DrawingInfos drawingInfos);
+    public void drawLine(DrawingInfos drawingInfos) throws IOException;
 
     public void exitTable() throws IOException;
 
-    public void exit();
+    public void exit() throws IOException;
 }

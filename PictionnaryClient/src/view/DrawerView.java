@@ -1,7 +1,6 @@
 package view;
 
 import Controller.Controller;
-import client.Client;
 import java.util.Observable;
 import java.util.Observer;
 import javafx.application.Platform;
@@ -10,7 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import message.Message;
-import message.Type;
+import message.util.Player;
 import pictionnary.drawingPane.DrawingPaneControl;
 
 /**
@@ -27,6 +26,12 @@ public class DrawerView extends VBox implements Observer {
     public DrawerView(Controller controller) {
         word = new Label();
         drawingPane = new DrawingPaneControl();
+        drawingPane.setModifiable(false);
+        this.drawingPane.lastLineProperty().addListener((obs, oldVal, newVal) -> {
+            if (drawingPane.isModifiable() && oldVal != null) {
+                controller.drawLine(oldVal);
+            }
+        });
         this.baseView = new BasePictionnaryView();
         baseView.setCenter(drawingPane);
         baseView.setGuessTitle("To draw :");
@@ -50,6 +55,10 @@ public class DrawerView extends VBox implements Observer {
                     case GAME_INIT:
                         word.setText((String) msg.getContent());
                         baseView.addToWordToGuessBox(word);
+                        break;
+                    case PROFILE:
+                        Player p = (Player) msg.getContent();
+                        drawingPane.setModifiable(p.hasPartner());
                         break;
                 }
             });
