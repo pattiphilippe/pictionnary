@@ -1,4 +1,4 @@
-package Model;
+package OneVOneModel;
 
 /**
  *
@@ -11,6 +11,7 @@ public class Player {
 
     public Player(String username) {
         this.username = username;
+        this.role = PlayerRole.NONE;
     }
 
     public String getUsername() {
@@ -25,7 +26,7 @@ public class Player {
         this.role = role;
     }
 
-    public boolean isUsername(String username) {
+    public boolean is(String username) {
         return this.username.equals(username);
     }
 

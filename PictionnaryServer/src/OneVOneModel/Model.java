@@ -1,4 +1,4 @@
-package Model;
+package OneVOneModel;
 
 import java.util.List;
 import java.util.Observable;
@@ -52,7 +52,14 @@ public abstract class Model extends Observable {
      *
      * @return
      */
-    public abstract String[] getPlayers();
+    public abstract String[] getPlayerNames();
+
+    /**
+     * Returns the word to guess.
+     *
+     * @return
+     */
+    public abstract String getWordToGuess();
 
     /**
      * Adds a guesser to the table.
@@ -88,4 +95,11 @@ public abstract class Model extends Observable {
      * @throws Model.GameException if player isn't the guesser
      */
     public abstract void guess(Player player, String guess) throws GameException;
+
+    /**
+     * Returns true if there's no player on the table.
+     *
+     * @return
+     */
+    public abstract boolean isEmpty();
 }

@@ -1,7 +1,10 @@
 package Server;
 
-import Model.Player;
-import Model.Table;
+import OneVOneModel.GameException;
+import OneVOneModel.GameState;
+import OneVOneModel.Model;
+import OneVOneModel.Player;
+import OneVOneModel.Table;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -10,19 +13,24 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import message.Message;
 import message.MessageError;
+import message.MessageGameInit;
+import message.MessageProfile;
 import message.MessageTables;
+import message.util.PlayerRole;
 
 /**
  * Pictionnary Server
  *
  * @author Philippe
  */
-public class Server extends AbstractServer {
+public class Server extends AbstractServer implements Observer {
 
     private static final int PORT = 10_000;
     static final String PLAYER_MAPINFO = "PLAYER";
@@ -46,6 +54,7 @@ public class Server extends AbstractServer {
 
     private int clientId; //to give to client... or username here
     private final List<Table> tables;
+    //TODO PLAYERS LIST 
 
     public Server() throws IOException {
         super(PORT);
@@ -62,7 +71,7 @@ public class Server extends AbstractServer {
      */
     public List<message.util.Table> getTables() {
         return this.tables.stream()
-                .map(model -> new message.util.Table(model.getId(), model.isOpen(), model.getPlayers()))
+                .map(model -> new message.util.Table(model.getId(), model.isOpen(), model.getPlayerNames()))
                 .collect(Collectors.toList());
     }
 
@@ -103,37 +112,53 @@ public class Server extends AbstractServer {
         //TODO print things to view
         super.clientConnected(client);
         client.setInfo(PLAYER_MAPINFO, new Player(getNextId() + ""));
-        try {
-            client.sendToClient(new MessageTables(getTables()));
-        } catch (IOException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        sendToClient(client, new MessageTables(getTables()));
     }
 
     @Override
     protected void clientException(ConnectionToClient client, Throwable ex) {
+        sendToClient(client, new MessageError(ex));
         super.clientException(client, ex);
+    }
+
+    private void sendToClient(ConnectionToClient client, Message msg) {
         try {
-            client.sendToClient(new MessageError(ex));
-        } catch (IOException ex1) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex1);
+            client.sendToClient(msg);
+            setChanged();
+            notifyObservers(msg);
+        } catch (IOException ex) {
+            clientException(client, ex);
         }
+    }
+
+    @Override
+    public void sendToAllClients(Object msg) {
+        super.sendToAllClients(msg);
         setChanged();
-        notifyObservers(new MessageError(ex));
+        notifyObservers(msg);
     }
 
     @Override
     protected void handleMessageFromClient(Object msg, ConnectionToClient client) {
+        //TODO check if possible RunMessage(Server, Message) class
         Message message = (Message) msg;
         switch (message.getType()) {
             case CREATE:
                 createTable((String) message.getContent(), client);
                 break;
+            case JOIN:
+                joinTable((String) message.getContent(), client);
+                break;
             case PROFILE:
-                updateName((String) message.getContent(), client);
+                String name = (String) ((message.util.Player) message.getContent()).getUsername();
+                updateName(name, client);
+                break;
+            case EXIT_TABLE:
+                removePlayer(client);
                 break;
             case EXIT:
                 try {
+                    removePlayer(client);
                     client.close();
                 } catch (IOException ex) {
                     Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
@@ -145,13 +170,36 @@ public class Server extends AbstractServer {
         }
     }
 
+    @Override
+    public void update(Observable o, Object arg) {
+        if (o instanceof Model) {
+            Thread t = new Thread(() -> {
+                Model table = (Model) o;
+                if (table.getState() == GameState.WON || table.getState() == GameState.LOST) {
+                    //TODO implement
+                } else {
+                    if (table.isEmpty()) {
+                        tables.remove(tables.indexOf(table));
+                    }
+                    sendToAllClients(new MessageTables(getTables()));
+                }
+            });
+            t.run();
+        }
+    }
+
+    private void updatePlayerInfo(Player p, ConnectionToClient client) {
+        client.setInfo(PLAYER_MAPINFO, p);
+        PlayerRole role = PlayerRole.valueOf(p.getRole().toString());
+        sendToClient(client, new MessageProfile(p.getUsername(), role));
+    }
+
     private void updateName(String name, ConnectionToClient client) {
         if (validId(name)) {
             Player p = (Player) client.getInfo(PLAYER_MAPINFO);
             p.setUsername(name);
-            client.setInfo(PLAYER_MAPINFO, p);
+            updatePlayerInfo(p, client);
         } else {
-            System.out.println("----> updateName failed");
             clientException(client, new IllegalArgumentException("Username already choosen on the server!"));
             try {
                 client.close();
@@ -165,7 +213,7 @@ public class Server extends AbstractServer {
         for (Thread th : this.getClientConnections()) {
             ConnectionToClient client = (ConnectionToClient) th;
             Player p = (Player) client.getInfo(PLAYER_MAPINFO);
-            if (p != null && p.isUsername(name)) {
+            if (p != null && p.is(name)) {
                 return false;
             }
         }
@@ -174,19 +222,49 @@ public class Server extends AbstractServer {
 
     private void createTable(String tableId, ConnectionToClient client) {
         if (!validTableId(tableId)) {
-            System.out.println("table id non valid");
             clientException(client, new IllegalArgumentException("Table id already choosen!"));
+        } else if (client.getInfo(TABLE_MAPINFO) != null) {
+            clientException(client, new GameException("Already in a game"));
         } else {
             Player p = (Player) client.getInfo(PLAYER_MAPINFO);
             Table t = new Table(tableId, p);
-            client.setInfo(PLAYER_MAPINFO, p);
-            client.setInfo(TABLE_MAPINFO, t);
+            t.addObserver(this);
             tables.add(t);
-            Message msg = new MessageTables(getTables());
-            sendToAllClients(msg);
-            setChanged();
-            notifyObservers(msg);
+            client.setInfo(TABLE_MAPINFO, t);
+            sendToAllClients(new MessageTables(getTables()));
+            updatePlayerInfo(p, client);
+            sendToClient(client, new MessageGameInit(t.getWordToGuess()));
         }
+    }
+
+    private void joinTable(String tableId, ConnectionToClient client) {
+        Table t = getTableById(tableId);
+        Player p = (Player) client.getInfo(PLAYER_MAPINFO);
+        if (t == null) {
+            clientException(client, new IllegalArgumentException("No such table!"));
+        } else if (!t.isOpen()) {
+            clientException(client, new IllegalArgumentException("Table closed!"));
+        } else if (p.getRole() != OneVOneModel.PlayerRole.NONE) {
+            clientException(client, new GameException("Player already on a table!"));
+        } else {
+            try {
+                t.addGuesser(p);
+                client.setInfo(TABLE_MAPINFO, t);
+                updatePlayerInfo(p, client);
+            } catch (GameException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    }
+
+    private Table getTableById(String tableId) {
+        for (Table t : tables) {
+            if (t.is(tableId)) {
+                return t;
+            }
+        }
+        return null;
     }
 
     private boolean validTableId(String tableId) {
@@ -198,6 +276,23 @@ public class Server extends AbstractServer {
             }
         }
         return true;
+    }
+
+    private void removePlayer(ConnectionToClient client) {
+        Player p = (Player) client.getInfo(PLAYER_MAPINFO);
+        Table t = (Table) client.getInfo(TABLE_MAPINFO);
+        if (t != null) {
+            if (t.isOnTable(p)) {
+                try {
+                    t.removePlayer(p);
+                    client.setInfo(TABLE_MAPINFO, t);
+                    updatePlayerInfo(p, client);
+                    //TODO remove player consequences
+                } catch (GameException ex) {
+                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
     }
 
 }

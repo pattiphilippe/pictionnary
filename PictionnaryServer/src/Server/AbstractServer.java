@@ -102,7 +102,7 @@ public abstract class AbstractServer extends Observable implements Runnable {
             return;
         }
         stopListening();
-        
+
         try {
             serverSocket.close();
         } finally {
@@ -117,7 +117,7 @@ public abstract class AbstractServer extends Observable implements Runnable {
                 }
                 serverSocket = null;
             }
-            
+
             try {
                 connectionListener.join(); // Wait for the end of listening thread.
             } catch (InterruptedException | NullPointerException ex) {
@@ -224,9 +224,9 @@ public abstract class AbstractServer extends Observable implements Runnable {
             if (serverSocket == null) {
                 serverSocket = new ServerSocket(getPort(), backlog);
             }
-            
+
             serverSocket.setSoTimeout(timeout);
-            
+
             connectionListener = new Thread(this);
             connectionListener.start();
         }
@@ -375,7 +375,7 @@ public abstract class AbstractServer extends Observable implements Runnable {
     final public void run() {
         readyToStop = false;
         serverStarted();
-        
+
         try {
             // Repeatedly waits for a new client connection, accepts it, and
             // starts a new thread to handle data exchange.
@@ -409,5 +409,5 @@ public abstract class AbstractServer extends Observable implements Runnable {
             serverStopped();
         }
     }
-    
+
 }
