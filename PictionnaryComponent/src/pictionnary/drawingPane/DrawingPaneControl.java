@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -61,6 +62,24 @@ public class DrawingPaneControl extends HBox {
         drawingPane.setColor(colorPk.getValue());
     }
 
+    /**
+     * Returns the last line property, to listen to the changes made on the last
+     * line.
+     *
+     * @return
+     */
+    public ObjectProperty<DrawingInfos> lastLineProperty() {
+        return drawingPane.lastLineProperty();
+    }
+
+    public boolean isModifiable() {
+        return drawingPane.isModifiable();
+    }
+
+    public void setModifiable(boolean modifiable) {
+        drawingPane.setModifiable(modifiable);
+    }
+
     @FXML
     private void colorPickerOnAction(ActionEvent e) {
         drawingPane.setColor(colorPk.getValue());
@@ -91,11 +110,6 @@ public class DrawingPaneControl extends HBox {
     }
 
     @FXML
-    private void modifiableOnAction(ActionEvent e) {
-        drawingPane.setModifiable(!drawingPane.isModifiable());
-    }
-
-    @FXML
     private void clearOnAction(ActionEvent e) {
         drawingPane.clearPane();
     }
@@ -109,10 +123,6 @@ public class DrawingPaneControl extends HBox {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file))) {
             out.writeObject(drawingPane.getDrawingInfos());
         }
-//        if (file != null) {
-//            Image image = drawingPane.getDrawingInfos().getImage();
-//            ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
-//        }
     }
 
     @FXML
@@ -124,9 +134,5 @@ public class DrawingPaneControl extends HBox {
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
             drawingPane.setDrawingInfos((DrawingInfos) in.readObject());
         }
-//        if (file != null) {
-//            Image image = SwingFXUtils.toFXImage(ImageIO.read(file), null);
-//            drawingPane.setDrawingInfos(new DrawingInfos(image));
-//        }
     }
 }

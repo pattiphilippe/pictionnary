@@ -1,5 +1,6 @@
 package pictionnary.drawingPane;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
 import javafx.beans.property.ObjectProperty;
@@ -28,6 +29,8 @@ public class DrawingPane extends Region implements IDrawing {
     private final ObjectProperty<Integer> thickness;
     private final BooleanProperty modifiable;
     private DrawingInfos drawingInfos;
+    private final DrawingInfos lastLineList;
+    private final ObjectProperty<DrawingInfos> lastLine;
 
     /**
      * Creates a drawing pane with all the idrawing methods and possibilities.
@@ -72,9 +75,23 @@ public class DrawingPane extends Region implements IDrawing {
             }
         };
 
+        lastLine = new ObjectPropertyBase<DrawingInfos>() {
+            @Override
+            public Object getBean() {
+                return this;
+            }
+
+            @Override
+            public String getName() {
+                return "Last Line";
+            }
+        };
+
         this.canvas = new Canvas();
         this.context = canvas.getGraphicsContext2D();
         this.drawingInfos = new DrawingInfos();
+        this.lastLine.setValue(new DrawingInfos());
+        this.lastLineList = new DrawingInfos();
 
         getChildren().add(canvas);
         initialize();
@@ -95,9 +112,15 @@ public class DrawingPane extends Region implements IDrawing {
         thickness.set(5);
 
         // addind mouse handlers
-        canvas.setOnMousePressed(e -> handleMouseEvent(e));
+        canvas.setOnMousePressed(e -> {
+            lastLineList.clear();
+            handleMouseEvent(e);
+        });
         canvas.setOnMouseDragged(e -> handleMouseEvent(e));
-        canvas.setOnMouseReleased(e -> handleMouseEvent(e));
+        canvas.setOnMouseReleased(e -> {
+            handleMouseEvent(e);
+            lastLine.setValue(new DrawingInfos(lastLineList));
+        });
     }
 
     @Override
@@ -176,9 +199,26 @@ public class DrawingPane extends Region implements IDrawing {
         return modifiable;
     }
 
+    public void addLine(DrawingInfos line) {
+        for (DrawingInfo point : line) {
+            addPoint(point.getX(), point.getY(), point.getThickness(), point.getColor(), point.getMouseEvent());
+        }
+    }
+
+    /**
+     * Returns the last line property, to listen to the changes made on the last
+     * line.
+     *
+     * @return
+     */
+    public ObjectProperty<DrawingInfos> lastLineProperty() {
+        return lastLine;
+    }
+
     private void handleMouseEvent(MouseEvent e) {
         if (modifiable.get()) {
             drawingInfos.addPoint(e.getX(), e.getY(), thickness.get(), color.get().toString(), e.getEventType());
+            lastLineList.addPoint(e.getX(), e.getY(), thickness.get(), color.get().toString(), e.getEventType());
             this.addPoint(e.getX(), e.getY(), thickness.get(), color.get().toString(), e.getEventType());
         }
     }

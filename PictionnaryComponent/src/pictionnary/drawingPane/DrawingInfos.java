@@ -19,6 +19,13 @@ public class DrawingInfos implements Serializable, Iterable<DrawingInfo> {
         this.drawingInfos = new ArrayList<>();
     }
 
+    public DrawingInfos(DrawingInfos other) {
+        this.drawingInfos = new ArrayList<>();
+        for (DrawingInfo point : other) {
+            this.drawingInfos.add(point);
+        }
+    }
+
     void addPoint(double x, double y, int thickness, String color, EventType<? extends MouseEvent> mouseEvent) {
         drawingInfos.add(new DrawingInfo(x, y, thickness, color, mouseEvent));
     }
@@ -30,5 +37,9 @@ public class DrawingInfos implements Serializable, Iterable<DrawingInfo> {
     @Override
     public Iterator<DrawingInfo> iterator() {
         return drawingInfos.iterator();
+    }
+
+    public void clear() {
+        drawingInfos.clear();
     }
 }
