@@ -10,10 +10,9 @@ public enum Type {
     TABLES,
     CREATE,
     JOIN,
-    //TODO
     GAME_INIT,
     //TODO
-    DRAW,
+    DRAW_LINE,
     //TODO
     GUESS,
     ERROR,

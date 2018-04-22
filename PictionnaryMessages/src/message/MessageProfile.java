@@ -15,8 +15,8 @@ public class MessageProfile implements Message {
         this.p = new Player(name);
     }
 
-    public MessageProfile(String name, PlayerRole role) {
-        this.p = new Player(name, role);
+    public MessageProfile(String name, PlayerRole role, boolean hasPartner) {
+        this.p = new Player(name, role, hasPartner);
     }
 
     @Override
