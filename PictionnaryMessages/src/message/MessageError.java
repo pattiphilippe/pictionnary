@@ -1,6 +1,5 @@
 package message;
 
-import message.util.User;
 
 /**
  *
@@ -17,16 +16,6 @@ public class MessageError implements Message {
     @Override
     public Type getType() {
         return Type.ERROR;
-    }
-
-    @Override
-    public User getAuthor() {
-        return User.ANYBODY;
-    }
-
-    @Override
-    public User getRecipient() {
-        return User.ANYBODY;
     }
 
     @Override

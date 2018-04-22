@@ -1,6 +1,5 @@
 package message;
 
-import message.util.User;
 
 /**
  *
@@ -17,16 +16,6 @@ public class MessageGameInit implements Message {
     @Override
     public Type getType() {
         return Type.GAME_INIT;
-    }
-
-    @Override
-    public User getAuthor() {
-        return User.ADMIN;
-    }
-
-    @Override
-    public User getRecipient() {
-        return User.ANYBODY;
     }
 
     @Override

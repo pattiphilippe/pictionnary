@@ -1,18 +1,17 @@
 package message;
 
-
 /**
  *
  * @author Philippe
  */
-public class MessageExit implements Message {
+public class MessageExitTable implements Message {
 
-    public MessageExit() {
+    public MessageExitTable() {
     }
 
     @Override
     public Type getType() {
-        return Type.EXIT;
+        return Type.EXIT_TABLE;
     }
 
     @Override

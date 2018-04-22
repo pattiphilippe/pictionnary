@@ -2,7 +2,6 @@ package message;
 
 import java.util.List;
 import message.util.Table;
-import message.util.User;
 
 /**
  *
@@ -22,16 +21,6 @@ public class MessageTables implements Message {
     @Override
     public Type getType() {
         return Type.TABLES;
-    }
-
-    @Override
-    public User getAuthor() {
-        return User.ADMIN;
-    }
-
-    @Override
-    public User getRecipient() {
-        return User.EVERYBODY;
     }
 
     @Override

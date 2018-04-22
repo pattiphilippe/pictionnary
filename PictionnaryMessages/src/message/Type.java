@@ -17,5 +17,6 @@ public enum Type {
     //TODO
     GUESS,
     ERROR,
-    EXIT;
+    EXIT,
+    EXIT_TABLE;
 }

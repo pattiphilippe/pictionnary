@@ -1,6 +1,5 @@
 package message;
 
-import message.util.User;
 
 /**
  *
@@ -17,16 +16,6 @@ public class MessageJoin implements Message {
     @Override
     public Type getType() {
         return Type.JOIN;
-    }
-
-    @Override
-    public User getAuthor() {
-        return User.ANYBODY;
-    }
-
-    @Override
-    public User getRecipient() {
-        return User.ADMIN;
     }
 
     @Override

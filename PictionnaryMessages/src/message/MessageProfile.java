@@ -1,6 +1,7 @@
 package message;
 
-import message.util.User;
+import message.util.Player;
+import message.util.PlayerRole;
 
 /**
  *
@@ -8,10 +9,14 @@ import message.util.User;
  */
 public class MessageProfile implements Message {
 
-    private final String name;
+    private final Player p;
 
     public MessageProfile(String name) {
-        this.name = name;
+        this.p = new Player(name);
+    }
+
+    public MessageProfile(String name, PlayerRole role) {
+        this.p = new Player(name, role);
     }
 
     @Override
@@ -20,18 +25,8 @@ public class MessageProfile implements Message {
     }
 
     @Override
-    public User getAuthor() {
-        return User.ANYBODY;
-    }
-
-    @Override
-    public User getRecipient() {
-        return User.ADMIN;
-    }
-
-    @Override
     public Object getContent() {
-        return name;
+        return p;
     }
 
 }
