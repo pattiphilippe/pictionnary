@@ -16,8 +16,8 @@ import message.Message;
 import message.Type;
 import client.Client;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import message.util.Table;
@@ -68,12 +68,21 @@ public class TableSelection extends HBox implements Observer {
 
     @FXML
     private void initialize() {
+        tableView.setRowFactory(tv -> {
+            TableRow<TableItem> row = new TableRow<>();
+            row.setOnMouseClicked(e -> {
+                if (e.getClickCount() == 2 && (!row.isEmpty())) {
+                    String tableId = (String) tableView.getColumns().get(0)
+                            .getCellData(row.getIndex());
+                    controller.join(tableId);
+                }
+            });
+            return row;
+        });
         tableIdCol.setCellValueFactory(new PropertyValueFactory<>("tableId"));
         isOpenCol.setCellValueFactory(new PropertyValueFactory<>("isOpen"));
         drawerCol.setCellValueFactory(new PropertyValueFactory<>("drawerName"));
         guesserCol.setCellValueFactory(new PropertyValueFactory<>("guesserName"));
-        joinCol.setCellValueFactory(val -> new SimpleBooleanProperty(val.getValue() != null));
-        joinCol.setCellFactory(val -> new ButtonCell(tableView, controller));
 
         tableView.setEditable(true);
         createBtn.setOnAction(e -> {
@@ -104,7 +113,6 @@ public class TableSelection extends HBox implements Observer {
     private void updateTableView() {
         tableView.getItems().clear();
         for (Table t : tables) {
-            //TODO check bug with run later
             // BUG pas possible avec observable list (voir Mr Lechien)
             tableView.getItems().add(new TableItem(t));
         }

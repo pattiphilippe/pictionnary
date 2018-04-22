@@ -1,15 +1,19 @@
 package Controller;
 
 import client.Client;
+import client.Model;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Dialog;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import message.Message;
 import message.util.Player;
+import message.util.WonInfos;
 import pictionnary.drawingPane.DrawingInfos;
 import view.Connection;
 import view.DrawerView;
@@ -34,21 +38,32 @@ public class Controller implements Runnable, Observer {
     private final Scene guesserScene;
     private final Stage primaryStage;
     private final MyAlert error;
+    private final Dialog won;
     private String errorContext;
 
     public Controller(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+        this.primaryStage.setOnCloseRequest(e -> exit());
+        this.primaryStage.getIcons().add(new Image("/Controller/icon.png"));
         this.connection = new Connection();
         this.connection.setController(this);
         this.tableSelection = new TableSelection();
         this.tableSelection.setController(this);
         this.tableScene = new Scene(tableSelection);
-        this.primaryStage = primaryStage;
-        this.error = new MyAlert(Alert.AlertType.ERROR);
         this.drawerView = new DrawerView(this);
         this.drawerScene = new Scene(drawerView);
         this.guesserView = new GuesserView(this);
         this.guesserScene = new Scene(guesserView);
-        this.primaryStage.setOnCloseRequest(e -> exit());
+        this.error = new MyAlert(Alert.AlertType.ERROR);
+        setDialogIcon(error);
+        this.won = new Dialog();
+        setDialogIcon(won);
+        won.setTitle("Game Won");
+    }
+
+    private void setDialogIcon(Dialog dialog) {
+        Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image("/Controller/icon.png"));
     }
 
     @Override
@@ -61,14 +76,20 @@ public class Controller implements Runnable, Observer {
     public void update(Observable o, Object arg) {
         if (arg instanceof Message) {
             Message msg = (Message) arg;
-            System.out.println("Controller::update() with message type " + msg.getType());
             Platform.runLater(() -> {
                 switch (msg.getType()) {
                     case PROFILE:
                         updateView((Player) msg.getContent());
                         break;
+                    case WON:
+                        WonInfos wonInfos = (WonInfos) msg.getContent();
+                        won.setHeaderText("Congratulations to " + wonInfos.getDrawerName()
+                                + " (Drawer) and " + wonInfos.getGuesserName() + " (Guesser)!");
+                        won.setContentText("You have gessed the word " + wonInfos.getWordToGuess()
+                                + " in " + wonInfos.getNbGuesses() + "tries."
+                                + "\n You can now leave the table.");
+                        won.show();
                     case ERROR:
-                        //TODO gamestate enum : context or check if error Context useful
                         exception(errorContext, (Exception) msg.getContent());
                         break;
                     default:
@@ -110,7 +131,6 @@ public class Controller implements Runnable, Observer {
                 exception("Exit Server error", ex);
             }
         }
-        //primaryStage.close();
         Platform.exit();
     }
 
@@ -121,7 +141,6 @@ public class Controller implements Runnable, Observer {
     }
 
     public void createTable(String tableId) {
-        System.out.println("--> controller::createTable()");
         try {
             client.createTable(tableId);
         } catch (IOException ex) {
@@ -133,16 +152,19 @@ public class Controller implements Runnable, Observer {
         try {
             client.joinTable(tableId);
         } catch (IOException ex) {
-            exception("Joining Table exception", ex);
+            exception("Joining Table error", ex);
         }
     }
 
     public void guess(String text) {
-        client.guess(text);
+        try {
+            client.guess(text);
+        } catch (IOException ex) {
+            exception("Guessing error", ex);
+        }
     }
 
     private void updateView(Player player) {
-        System.out.println("Controller::updateView with " + player.getRole());
         switch (player.getRole()) {
             case DRAWER:
                 setDrawerView();
@@ -186,7 +208,7 @@ public class Controller implements Runnable, Observer {
         try {
             client.drawLine(oldVal);
         } catch (IOException ex) {
-            exception("Drawing Line exception", ex);
+            exception("Drawing Line error", ex);
         }
     }
 

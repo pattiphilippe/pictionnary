@@ -34,7 +34,6 @@
                   <TableColumn fx:id="isOpenCol" prefWidth="75.0" text="Is Open" />
                   <TableColumn fx:id="drawerCol" prefWidth="75.0" text="Drawer-" />
                   <TableColumn fx:id="guesserCol" prefWidth="75.0" text="Guesser" />
-                  <TableColumn fx:id="joinCol" prefWidth="75.0" text="Join" />
                </columns>
                <columnResizePolicy>
                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import javafx.scene.input.MouseEvent;
 import message.Message;
 import message.MessageCreate;
 import message.MessageDrawLine;
 import message.MessageExit;
 import message.MessageExitTable;
+import message.MessageGuess;
 import message.MessageJoin;
 import message.Type;
 import message.MessageProfile;
@@ -49,7 +49,6 @@ public class Client extends AbstractClient implements Model {
     @Override
     protected void handleMessageFromServer(Object msg) {
         Message message = (Message) msg;
-        System.out.println("message received of type : " + message.getType());
         Type type = message.getType();
         switch (type) {
             case TABLES:
@@ -58,6 +57,8 @@ public class Client extends AbstractClient implements Model {
             case GAME_INIT:
             case ERROR:
             case DRAW_LINE:
+            case GUESS:
+            case WON:
                 notifyChange(message);
                 break;
             default:
@@ -102,13 +103,12 @@ public class Client extends AbstractClient implements Model {
     }
 
     @Override
-    public void guess(String guess) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void guess(String guess) throws IOException {
+        sendToServer(new MessageGuess(guess));
     }
 
     @Override
     public void drawLine(DrawingInfos drawingInfos) throws IOException {
-        System.out.println("Client::drawLine()");
         Message msg = new MessageDrawLine(drawingInfos);
         sendToServer(msg);
     }

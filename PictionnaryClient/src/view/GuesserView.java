@@ -28,28 +28,32 @@ public class GuesserView extends VBox implements Observer {
 
     public GuesserView(Controller controller) {
         this.setPadding(new Insets(15));
+        this.controller = controller;
         this.baseView = new BasePictionnaryView();
+        baseView.setController(controller);
         this.drawingPane = new DrawingPane();
         this.drawingPane.setModifiable(false);
         this.baseView.setCenter(drawingPane);
-        this.baseView.setGuessTitle("To guess :");
+        this.baseView.setGameState("In Game");
+        this.baseView.setGuessTitle("Guess :");
         this.getChildren().add(baseView);
         this.guess = new TextField();
+        guess.getText();
         this.guessBtn = new Button("OK");
         this.guessBtn.setWrapText(true);
         this.guessBtn.setFont(new Font("Berlin Sans FB", 17));
         guessBtn.setOnAction(e -> {
-            //TODO BUG guess is null
-            this.controller.guess(guess.getText());
+            Platform.runLater(() -> {
+                String guess = this.guess.getText();
+                if (!guess.equals("")) {
+                    this.controller.guess(guess);
+                }
+            });
         });
         HBox guessBox = new HBox(10, guess, guessBtn);
 
         baseView.addToWordToGuessBox(guessBox);
-    }
-
-    public void setController(Controller controller) {
-        this.controller = controller;
-        baseView.setController(controller);
+        guess.getText();
     }
 
     @Override
@@ -59,9 +63,13 @@ public class GuesserView extends VBox implements Observer {
             Platform.runLater(() -> {
                 switch (msg.getType()) {
                     case DRAW_LINE:
-                        System.out.println("before draw line");
                         drawingPane.addLine((DrawingInfos) msg.getContent());
-                        System.out.println("after draw line");
+                        break;
+                    case GUESS:
+                        baseView.addGuess((String) msg.getContent());
+                        break;
+                    case WON:
+                        this.baseView.setGameState("Won");
                         break;
                 }
             });

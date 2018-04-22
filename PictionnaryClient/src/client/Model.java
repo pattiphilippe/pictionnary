@@ -19,7 +19,7 @@ public interface Model {
 
     public void joinTable(String tableId) throws IOException;
 
-    public void guess(String guess);
+    public void guess(String guess) throws IOException;
 
     public void drawLine(DrawingInfos drawingInfos) throws IOException;
 

@@ -29,7 +29,6 @@ public class Connection extends GridPane {
     private Button connectBtn;
     @FXML
     private Button cancelBtn;
-    //TODO check if needed
     private final Alert error;
 
     private Controller controller;
