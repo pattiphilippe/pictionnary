@@ -77,6 +77,7 @@ public class BasePictionnaryView extends BorderPane {
     }
 
     public void addToWordToGuessBox(Node node) {
+        //Pas avec observable List, BUG similaire à celui dans TableSelection::updateTableView() voir Mr JLechien
         wordToGuess.getChildren().add(node);
     }
 
