@@ -99,7 +99,6 @@ public class DrawingPane extends Region implements IDrawing {
 
     @Override
     public void initialize() {
-        //TODO ? purpose of initialize? init canvas pos? properties value? drawing handlers?
         //initialising canvas position with border
         double left = getBorder().getStrokes().get(0).getWidths().getLeft();
         canvas.widthProperty().bind(widthProperty().subtract(left * 2));
