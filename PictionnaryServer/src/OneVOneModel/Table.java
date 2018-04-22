@@ -3,68 +3,62 @@ package OneVOneModel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Observer;
 
 /**
  *
  * @author Philippe
  */
 public class Table extends Model {
-    
+
     private final String id;
     private boolean isOpen;
     private final List<String> guesses;
-    private GameState gameState;
     private final String[] playerNames;
     private final String wordToGuess;
-    
+    private boolean isFinished;
+
     public Table(String id, Player drawer) {
         this.id = id;
         this.isOpen = true;
         this.guesses = new ArrayList<>();
-        this.gameState = GameState.INIT;
         this.wordToGuess = Words.random();
+        this.isFinished = false;
         playerNames = new String[2];
         playerNames[0] = drawer.getUsername();
         playerNames[1] = null;
         drawer.setRole(PlayerRole.DRAWER);
     }
-    
+
     @Override
     public String getId() {
         return id;
     }
-    
+
     @Override
     public boolean is(String tableId) {
         return (this.id == null ? tableId == null : this.id.equals(tableId));
     }
-    
-    @Override
-    public GameState getState() {
-        return gameState;
-    }
-    
+
     @Override
     public List<String> getGuesses() {
         return Collections.unmodifiableList(guesses);
     }
-    
+
     @Override
     public boolean isOpen() {
         return isOpen;
     }
-    
+
     @Override
     public String[] getPlayerNames() {
         return playerNames;
     }
-    
+
     @Override
     public String getWordToGuess() {
         return wordToGuess;
     }
-    
+
     @Override
     public void addGuesser(Player guesser) throws GameException {
         if (!isOpen) {
@@ -73,11 +67,10 @@ public class Table extends Model {
         playerNames[1] = guesser.getUsername();
         guesser.setRole(PlayerRole.GUESSER);
         this.isOpen = false;
-        this.gameState = GameState.IN_PROGRESS;
         setChanged();
         notifyObservers();
     }
-    
+
     @Override
     public boolean isOnTable(Player player) {
         for (String username : playerNames) {
@@ -110,7 +103,7 @@ public class Table extends Model {
         }
         throw new GameException("Player is not on table");
     }
-    
+
     @Override
     public void guess(Player player, String guess) throws GameException {
         if (!isOnTable(player)) {
@@ -119,14 +112,14 @@ public class Table extends Model {
         if (player.getRole() != PlayerRole.GUESSER) {
             throw new GameException("Only the guesser can guess the word");
         }
-        if (wordToGuess.equals(guess)) {
-            gameState = GameState.WON;
+        if (wordToGuess.equals(guess.toLowerCase())) {
+            isFinished = true;
         }
         guesses.add(guess);
         setChanged();
         notifyObservers();
     }
-    
+
     @Override
     public boolean isEmpty() {
         for (String name : playerNames) {
@@ -136,5 +129,10 @@ public class Table extends Model {
         }
         return true;
     }
-    
+
+    @Override
+    public boolean isFinished() {
+        return isFinished;
+    }
+
 }

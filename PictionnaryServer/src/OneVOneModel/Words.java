@@ -27,6 +27,6 @@ enum Words {
 
     static String random() {
         Words[] values = values();
-        return values[(int) (Math.random() * values.length)].toString();
+        return values[(int) (Math.random() * values.length)].toString().toLowerCase();
     }
 }

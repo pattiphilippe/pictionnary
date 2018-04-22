@@ -8,7 +8,9 @@ import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import message.Message;
+import message.util.Player;
 import message.util.Table;
+import message.util.WonInfos;
 
 /**
  *
@@ -57,6 +59,15 @@ public class ServerConsole implements Observer {
                 case TABLES:
                 case JOIN:
                     printTables(((Server) o).getTables());
+                    break;
+                case PROFILE:
+                    Player p = (Player) msg.getContent();
+                    System.out.println("Profil of " + p.getUsername() + " updated\n");
+                    break;
+                case WON:
+                    WonInfos wonInfos = (WonInfos) msg.getContent();
+                    System.out.println("Game won by " + wonInfos.getDrawerName()
+                            + " (Drawer) and " + wonInfos.getGuesserName() + " (Guesser).");
                     break;
                 case ERROR:
                     Exception ex = (Exception) msg.getContent();

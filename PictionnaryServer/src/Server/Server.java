@@ -1,7 +1,6 @@
 package Server;
 
 import OneVOneModel.GameException;
-import OneVOneModel.GameState;
 import OneVOneModel.Model;
 import OneVOneModel.Player;
 import static OneVOneModel.PlayerRole.DRAWER;
@@ -24,6 +23,7 @@ import message.MessageError;
 import message.MessageGameInit;
 import message.MessageProfile;
 import message.MessageTables;
+import message.MessageWon;
 import message.util.PlayerRole;
 
 /**
@@ -32,12 +32,12 @@ import message.util.PlayerRole;
  * @author Philippe
  */
 public class Server extends AbstractServer implements Observer {
-
+    
     private static final int PORT = 10_000;
     static final String PLAYER_MAPINFO = "PLAYER";
     static final String TABLE_MAPINFO = "TABLE";
     static final String PARTNER_CLIENT_INFO = "PARTNER";
-
+    
     private static InetAddress getLocalAddress() {
         try {
             Enumeration<NetworkInterface> b = NetworkInterface.getNetworkInterfaces();
@@ -53,13 +53,13 @@ public class Server extends AbstractServer implements Observer {
         }
         return null;
     }
-
+    
     private int clientId; //to give to client... or username here
     private final List<Table> tables;
-
+    
     public Server() throws IOException {
         super(PORT);
-
+        
         tables = new ArrayList<>();
         clientId = 0;
         this.listen();
@@ -109,24 +109,28 @@ public class Server extends AbstractServer implements Observer {
         clientId++;
         return clientId;
     }
-
+    
     @Override
     protected void clientConnected(ConnectionToClient client) {
         //TODO print things to view
         super.clientConnected(client);
         client.setInfo(PLAYER_MAPINFO, new Player(getNextId() + ""));
-        sendToClient(client, new MessageTables(getTables()));
+        try {
+            client.sendToClient(new MessageTables(getTables()));
+        } catch (IOException ex) {
+            clientException(client, ex);
+        }
     }
-
+    
     @Override
     protected void clientException(ConnectionToClient client, Throwable ex) {
         sendToClient(client, new MessageError(ex));
         super.clientException(client, ex);
     }
-
+    
     private void sendToClient(ConnectionToClient client, Message msg) {
         try {
-            if (client.isConnected()) {
+            if (client != null && client.isConnected()) {
                 client.sendToClient(msg);
             }
             setChanged();
@@ -135,14 +139,14 @@ public class Server extends AbstractServer implements Observer {
             clientException(client, ex);
         }
     }
-
+    
     @Override
     public void sendToAllClients(Object msg) {
         super.sendToAllClients(msg);
         setChanged();
         notifyObservers(msg);
     }
-
+    
     @Override
     protected void handleMessageFromClient(Object msg, ConnectionToClient client) {
         //TODO check if possible RunMessage(Server, Message) class
@@ -161,6 +165,9 @@ public class Server extends AbstractServer implements Observer {
             case DRAW_LINE:
                 drawLine(client, message);
                 break;
+            case GUESS:
+                guess(client, message);
+                break;
             case EXIT_TABLE:
                 removePlayer(client);
                 break;
@@ -177,32 +184,35 @@ public class Server extends AbstractServer implements Observer {
                 break;
         }
     }
-
+    
     @Override
     public void update(Observable o, Object arg) {
         if (o instanceof Model) {
-            Thread t = new Thread(() -> {
-                Model table = (Model) o;
-                if (table.getState() == GameState.WON || table.getState() == GameState.LOST) {
-                    //TODO implement
-                } else {
-                    if (table.isEmpty()) {
-                        tables.remove(tables.indexOf(table));
+            Thread th = new Thread(() -> {
+                Model t = (Model) o;
+                if (t.isFinished()) {
+                    String[] names = t.getPlayerNames();
+                    Message msg = new MessageWon(names[0], names[1], t.getWordToGuess(), t.getGuesses().size());
+                    for (String name : t.getPlayerNames()) {
+                        ConnectionToClient client = getClientById(name);
+                        sendToClient(client, msg);
                     }
+                } else if (t.isEmpty()) {
+                    tables.remove(tables.indexOf(t));
                     sendToAllClients(new MessageTables(getTables()));
                 }
             });
-            t.run();
+            th.run();
         }
     }
-
+    
     private void updatePlayerInfo(Player p, ConnectionToClient client) {
         client.setInfo(PLAYER_MAPINFO, p);
         boolean hasPartner = client.getInfo(PARTNER_CLIENT_INFO) != null;
         PlayerRole role = PlayerRole.valueOf(p.getRole().toString());
         sendToClient(client, new MessageProfile(p.getUsername(), role, hasPartner));
     }
-
+    
     private void updateName(String name, ConnectionToClient client) {
         if (validId(name)) {
             Player p = (Player) client.getInfo(PLAYER_MAPINFO);
@@ -217,7 +227,7 @@ public class Server extends AbstractServer implements Observer {
             }
         }
     }
-
+    
     private boolean validId(String name) {
         for (Thread th : this.getClientConnections()) {
             ConnectionToClient client = (ConnectionToClient) th;
@@ -228,7 +238,7 @@ public class Server extends AbstractServer implements Observer {
         }
         return true;
     }
-
+    
     private void createTable(String tableId, ConnectionToClient client) {
         if (!validTableId(tableId)) {
             clientException(client, new IllegalArgumentException("Table id already choosen!"));
@@ -244,7 +254,7 @@ public class Server extends AbstractServer implements Observer {
             updatePlayerInfo(p, client);
         }
     }
-
+    
     private void joinTable(String tableId, ConnectionToClient client) {
         if (client.getInfo(TABLE_MAPINFO) != null) {
             clientException(client, new GameException("Already in a game"));
@@ -267,14 +277,15 @@ public class Server extends AbstractServer implements Observer {
                     partner.setInfo(PARTNER_CLIENT_INFO, client);
                     updatePlayerInfo(p, client);
                     updatePlayerInfo(partnerP, partner);
-                    sendToClient(client, new MessageGameInit(t.getWordToGuess()));
+                    sendToAllClients(new MessageTables(getTables()));
+                    sendToClient(partner, new MessageGameInit(t.getWordToGuess()));
                 } catch (GameException ex) {
                     Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
     }
-
+    
     private Table getTableById(String tableId) {
         for (Table t : tables) {
             if (t.is(tableId)) {
@@ -283,7 +294,7 @@ public class Server extends AbstractServer implements Observer {
         }
         return null;
     }
-
+    
     private ConnectionToClient getClientById(String playerId) {
         for (Thread t : getClientConnections()) {
             ConnectionToClient client = (ConnectionToClient) t;
@@ -294,7 +305,7 @@ public class Server extends AbstractServer implements Observer {
         }
         return null;
     }
-
+    
     private boolean validTableId(String tableId) {
         for (Thread th : this.getClientConnections()) {
             ConnectionToClient client = (ConnectionToClient) th;
@@ -305,7 +316,7 @@ public class Server extends AbstractServer implements Observer {
         }
         return true;
     }
-
+    
     private void removePlayer(ConnectionToClient client) {
         Table t = (Table) client.getInfo(TABLE_MAPINFO);
         if (t != null) {
@@ -315,27 +326,54 @@ public class Server extends AbstractServer implements Observer {
                     t.removePlayer(p);
                     client.setInfo(TABLE_MAPINFO, null);
                     client.setInfo(PARTNER_CLIENT_INFO, null);
+                    updatePlayerInfo(p, client);
                     int idxPartnerName = p.getRole() == DRAWER ? 1 : 0;
                     ConnectionToClient partner = getClientById(t.getPlayerNames()[idxPartnerName]);
                     if (partner != null) {
+                        Player partnerP = (Player) partner.getInfo(PLAYER_MAPINFO);
                         partner.setInfo(PARTNER_CLIENT_INFO, null);
-                        updatePlayerInfo(p, client);
-                        //TODO sendToClient(partner, new MessageLeft());
+                        updatePlayerInfo(partnerP, partner);
                     }
+                    sendToAllClients(new MessageTables(getTables()));
                 } catch (GameException ex) {
                     Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
     }
-
+    
     private void drawLine(ConnectionToClient client, Message msg) {
         ConnectionToClient partner = (ConnectionToClient) client.getInfo(PARTNER_CLIENT_INFO);
         if (partner == null) {
-            clientException(client, new GameException("No Partner to play"));
+            clientException(client, new GameException("No Partner to play!"));
         } else {
-            sendToClient(partner, msg);
+            Table t = (Table) client.getInfo(TABLE_MAPINFO);
+            if (t.isFinished()) {
+                clientException(client, new GameException("Game is finished!"));
+            } else {
+                sendToClient(partner, msg);
+            }
         }
     }
-
+    
+    private void guess(ConnectionToClient client, Message msg) {
+        Table t = (Table) client.getInfo(TABLE_MAPINFO);
+        Player p = (Player) client.getInfo(PLAYER_MAPINFO);
+        int idxPartnerName = p.getRole() == DRAWER ? 1 : 0;
+        ConnectionToClient partner = getClientById(t.getPlayerNames()[idxPartnerName]);
+        if (partner == null) {
+            clientException(client, new GameException("No Partner to play"));
+        } else if (t.isFinished()) {
+            clientException(client, new GameException("Game is finished!"));
+        } else {
+            try {
+                t.guess(p, (String) msg.getContent());
+                sendToClient(client, msg);
+                sendToClient(partner, msg);
+            } catch (GameException ex) {
+                clientException(client, ex);
+            }
+        }
+    }
+    
 }

@@ -25,11 +25,11 @@ public abstract class Model extends Observable {
     public abstract boolean is(String tableId);
 
     /**
-     * Returns the state of the game.
+     * Returns true if the game is finished.
      *
      * @return
      */
-    public abstract GameState getState();
+    public abstract boolean isFinished();
 
     /**
      * Returns all the previous guesses.
@@ -75,7 +75,6 @@ public abstract class Model extends Observable {
      * @param player
      * @return
      */
-    //TODO REMOVE AND WORK WITH TABLE IDS, PLAYER SHOULD ONLY HAVE A USERNAME, NO ID
     public abstract boolean isOnTable(Player player);
 
     /**
