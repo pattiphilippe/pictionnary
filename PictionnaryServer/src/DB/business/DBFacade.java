@@ -6,5 +6,5 @@ package DB.business;
  * @author G43197
  */
 public interface DBFacade {
-    
+
 }

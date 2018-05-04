@@ -1,5 +1,8 @@
 package Server;
 
+import DB.db.DbException;
+import Model.MultiPlayerFacade;
+import Model.MultiPlayerModel;
 import OneVOneModel.GameException;
 import OneVOneModel.Model;
 import OneVOneModel.Player;
@@ -37,6 +40,7 @@ public class Server extends AbstractServer implements Observer {
     static final String PLAYER_MAPINFO = "PLAYER";
     static final String TABLE_MAPINFO = "TABLE";
     static final String PARTNER_CLIENT_INFO = "PARTNER";
+    static final String USERNAME_MAPINFO = "USERNAME";
 
     private static InetAddress getLocalAddress() {
         try {
@@ -54,12 +58,15 @@ public class Server extends AbstractServer implements Observer {
         return null;
     }
 
+    private final MultiPlayerFacade model;
     private int clientId; //to give to client... or username here
     private final List<Model> tables;
 
     public Server() throws IOException {
         super(PORT);
 
+        model = new MultiPlayerModel();
+        model.addObserver(this);
         tables = new ArrayList<>();
         clientId = 0;
         this.listen();
@@ -71,9 +78,9 @@ public class Server extends AbstractServer implements Observer {
      * @return the list of models.
      */
     public List<message.util.Table> getTables() {
-        return this.tables.stream()
-                .map(model -> new message.util.Table(
-                model.getId(), model.isOpen(), model.getPlayerNames()))
+        return model.getTables().stream()
+                .map(t -> new message.util.Table(
+                t.getId(), t.isOpen(), t.getPlayerNames()))
                 .collect(Collectors.toList());
     }
 
@@ -114,7 +121,7 @@ public class Server extends AbstractServer implements Observer {
     protected void clientConnected(ConnectionToClient client) {
         //TODO print things to view
         super.clientConnected(client);
-        client.setInfo(PLAYER_MAPINFO, new Player(getNextId() + ""));
+        //client.setInfo(PLAYER_MAPINFO, new Player(getNextId() + ""));
         try {
             client.sendToClient(new MessageTables(getTables()));
         } catch (IOException ex) {
@@ -153,14 +160,25 @@ public class Server extends AbstractServer implements Observer {
         Message message = (Message) msg;
         switch (message.getType()) {
             case CREATE:
-                createTable((String) message.getContent(), client);
+                try {
+                    model.createTable((String) client.getInfo(USERNAME_MAPINFO), (String) message.getContent());
+                } catch (GameException | DbException e) {
+                    clientException(client, e);
+                }
+                //createTable((String) message.getContent(), client);
                 break;
             case JOIN:
-                joinTable((String) message.getContent(), client);
+                try {
+                    model.joinTable((String) client.getInfo(USERNAME_MAPINFO), (String) message.getContent());
+                } catch (GameException ex) {
+                    clientException(client, ex);
+                }
+                //joinTable((String) message.getContent(), client);
                 break;
             case PROFILE:
-                String name = (String) ((message.util.Player) message.getContent()).getUsername();
-                updateName(name, client);
+                profile(client, message);
+//                String name = (String) ((message.util.Player) message.getContent()).getUsername();
+//                updateName(name, client);
                 break;
             case DRAW_LINE:
                 drawLine(client, message);
@@ -185,6 +203,23 @@ public class Server extends AbstractServer implements Observer {
         }
     }
 
+    private void profile(ConnectionToClient client, Message message) {
+        String oldUsername = (String) client.getInfo(USERNAME_MAPINFO);
+        String newUsername = ((message.util.Player) message.getContent()).getUsername();
+        try {
+            if (oldUsername == null || oldUsername.equals("")) {
+                client.setInfo(USERNAME_MAPINFO, newUsername);
+                model.createPlayer(newUsername);
+                sendToClient(client, new MessageTables(getTables()));
+            } else {
+                model.updateUsername(oldUsername, newUsername);
+                client.setInfo(USERNAME_MAPINFO, newUsername);
+            }
+        } catch (DbException e) {
+            clientException(client, e);
+        }
+    }
+
     @Override
     public void update(Observable o, Object arg) {
         if (o instanceof Model) {
@@ -203,12 +238,23 @@ public class Server extends AbstractServer implements Observer {
                 }
             });
             th.run();
+        } else if (o instanceof MultiPlayerFacade) {
+            Thread th = new Thread(() -> {
+                if (arg instanceof Player) {
+                    Player p = (Player) arg;
+                    ConnectionToClient client = getClientById(p.getUsername());
+                    updatePlayerInfo(p, client);
+                }
+            });
+            th.run();
         }
     }
 
     private void updatePlayerInfo(Player p, ConnectionToClient client) {
-        client.setInfo(PLAYER_MAPINFO, p);
-        boolean hasPartner = client.getInfo(PARTNER_CLIENT_INFO) != null;
+        //client.setInfo(PLAYER_MAPINFO, p);
+        //boolean hasPartner = client.getInfo(PARTNER_CLIENT_INFO) != null;
+        //TODO optimize
+        boolean hasPartner = p.getTable() != null && ((Table) p.getTable()).getPlayerNames().length == 2;
         PlayerRole role = PlayerRole.valueOf(p.getRole().toString());
         sendToClient(client, new MessageProfile(p.getUsername(), role, hasPartner));
     }
@@ -222,8 +268,10 @@ public class Server extends AbstractServer implements Observer {
             clientException(client, new IllegalArgumentException("Username already choosen on the server!"));
             try {
                 client.close();
+
             } catch (IOException ex) {
-                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Server.class
+                        .getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -239,6 +287,7 @@ public class Server extends AbstractServer implements Observer {
         return true;
     }
 
+    /*
     private void createTable(String tableId, ConnectionToClient client) {
         if (!validTableId(tableId)) {
             clientException(client, new IllegalArgumentException("Table id already choosen!"));
@@ -254,7 +303,7 @@ public class Server extends AbstractServer implements Observer {
             updatePlayerInfo(p, client);
         }
     }
-
+     */
     private void joinTable(String tableId, ConnectionToClient client) {
         if (client.getInfo(TABLE_MAPINFO) != null) {
             clientException(client, new GameException("Already in a game"));
@@ -279,8 +328,10 @@ public class Server extends AbstractServer implements Observer {
                     updatePlayerInfo(partnerP, partner);
                     sendToAllClients(new MessageTables(getTables()));
                     sendToClient(partner, new MessageGameInit(t.getWordToGuess()));
+
                 } catch (GameException ex) {
-                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Server.class
+                            .getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -298,14 +349,15 @@ public class Server extends AbstractServer implements Observer {
     private ConnectionToClient getClientById(String playerId) {
         for (Thread t : getClientConnections()) {
             ConnectionToClient client = (ConnectionToClient) t;
-            Player p = (Player) client.getInfo(PLAYER_MAPINFO);
-            if (p.is(playerId)) {
+            String username = (String) client.getInfo(USERNAME_MAPINFO);
+            if (username.equals(playerId)) {
                 return client;
             }
         }
         return null;
     }
 
+    /*
     private boolean validTableId(String tableId) {
         for (Thread th : this.getClientConnections()) {
             ConnectionToClient client = (ConnectionToClient) th;
@@ -316,7 +368,7 @@ public class Server extends AbstractServer implements Observer {
         }
         return true;
     }
-
+     */
     private void removePlayer(ConnectionToClient client) {
         Table t = (Table) client.getInfo(TABLE_MAPINFO);
         if (t != null) {
@@ -335,8 +387,10 @@ public class Server extends AbstractServer implements Observer {
                         updatePlayerInfo(partnerP, partner);
                     }
                     sendToAllClients(new MessageTables(getTables()));
+
                 } catch (GameException ex) {
-                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Server.class
+                            .getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }

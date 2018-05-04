@@ -8,10 +8,20 @@ public class Player {
 
     private String username;
     private PlayerRole role;
+    private Table table;
 
     public Player(String username) {
         this.username = username;
         this.role = PlayerRole.NONE;
+        this.table = null;
+    }
+
+    public Table getTable() {
+        return table;
+    }
+
+    public void setTable(Table table) {
+        this.table = table;
     }
 
     public String getUsername() {

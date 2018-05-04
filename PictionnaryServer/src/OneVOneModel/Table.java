@@ -13,6 +13,7 @@ public class Table extends Model {
     private final String id;
     private boolean isOpen;
     private final List<String> guesses;
+    private final Player[] players;
     private final String[] playerNames;
     private final String wordToGuess;
     private boolean isFinished;
@@ -25,7 +26,9 @@ public class Table extends Model {
         this.isFinished = false;
         playerNames = new String[2];
         playerNames[0] = drawer.getUsername();
-        playerNames[1] = null;
+        players = new Player[2];
+        players[0] = drawer;
+        drawer.setTable(this);
         drawer.setRole(PlayerRole.DRAWER);
     }
 
@@ -64,7 +67,9 @@ public class Table extends Model {
         if (!isOpen) {
             throw new GameException("Table is closed!");
         }
+        players[1] = guesser;
         playerNames[1] = guesser.getUsername();
+        guesser.setTable(this);
         guesser.setRole(PlayerRole.GUESSER);
         this.isOpen = false;
         setChanged();
@@ -81,12 +86,6 @@ public class Table extends Model {
         return false;
     }
 
-    /**
-     * Removes a player from the table.
-     *
-     * @param player
-     * @return true if it did, false if the player was not on this table.
-     */
     @Override
     public void removePlayer(Player player) throws GameException {
         if (player == null) {
