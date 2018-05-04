@@ -1,12 +1,12 @@
 package message;
 
-
 /**
  *
  * @author Philippe
  */
 public class MessageJoin implements Message {
 
+    //TODO rename to tableName (no id should be given to a table)
     private final String tableId;
 
     public MessageJoin(String tableId) {
