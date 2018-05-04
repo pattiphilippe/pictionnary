@@ -1,4 +1,4 @@
-package BD.dto;
+package DB.dto;
 
 /**
  *

@@ -32,12 +32,12 @@ import message.util.PlayerRole;
  * @author Philippe
  */
 public class Server extends AbstractServer implements Observer {
-    
+
     private static final int PORT = 10_000;
     static final String PLAYER_MAPINFO = "PLAYER";
     static final String TABLE_MAPINFO = "TABLE";
     static final String PARTNER_CLIENT_INFO = "PARTNER";
-    
+
     private static InetAddress getLocalAddress() {
         try {
             Enumeration<NetworkInterface> b = NetworkInterface.getNetworkInterfaces();
@@ -53,13 +53,13 @@ public class Server extends AbstractServer implements Observer {
         }
         return null;
     }
-    
+
     private int clientId; //to give to client... or username here
-    private final List<Table> tables;
-    
+    private final List<Model> tables;
+
     public Server() throws IOException {
         super(PORT);
-        
+
         tables = new ArrayList<>();
         clientId = 0;
         this.listen();
@@ -109,7 +109,7 @@ public class Server extends AbstractServer implements Observer {
         clientId++;
         return clientId;
     }
-    
+
     @Override
     protected void clientConnected(ConnectionToClient client) {
         //TODO print things to view
@@ -121,13 +121,13 @@ public class Server extends AbstractServer implements Observer {
             clientException(client, ex);
         }
     }
-    
+
     @Override
     protected void clientException(ConnectionToClient client, Throwable ex) {
         sendToClient(client, new MessageError(ex));
         super.clientException(client, ex);
     }
-    
+
     private void sendToClient(ConnectionToClient client, Message msg) {
         try {
             if (client != null && client.isConnected()) {
@@ -139,14 +139,14 @@ public class Server extends AbstractServer implements Observer {
             clientException(client, ex);
         }
     }
-    
+
     @Override
     public void sendToAllClients(Object msg) {
         super.sendToAllClients(msg);
         setChanged();
         notifyObservers(msg);
     }
-    
+
     @Override
     protected void handleMessageFromClient(Object msg, ConnectionToClient client) {
         //TODO check if possible RunMessage(Server, Message) class
@@ -184,7 +184,7 @@ public class Server extends AbstractServer implements Observer {
                 break;
         }
     }
-    
+
     @Override
     public void update(Observable o, Object arg) {
         if (o instanceof Model) {
@@ -205,14 +205,14 @@ public class Server extends AbstractServer implements Observer {
             th.run();
         }
     }
-    
+
     private void updatePlayerInfo(Player p, ConnectionToClient client) {
         client.setInfo(PLAYER_MAPINFO, p);
         boolean hasPartner = client.getInfo(PARTNER_CLIENT_INFO) != null;
         PlayerRole role = PlayerRole.valueOf(p.getRole().toString());
         sendToClient(client, new MessageProfile(p.getUsername(), role, hasPartner));
     }
-    
+
     private void updateName(String name, ConnectionToClient client) {
         if (validId(name)) {
             Player p = (Player) client.getInfo(PLAYER_MAPINFO);
@@ -227,7 +227,7 @@ public class Server extends AbstractServer implements Observer {
             }
         }
     }
-    
+
     private boolean validId(String name) {
         for (Thread th : this.getClientConnections()) {
             ConnectionToClient client = (ConnectionToClient) th;
@@ -238,7 +238,7 @@ public class Server extends AbstractServer implements Observer {
         }
         return true;
     }
-    
+
     private void createTable(String tableId, ConnectionToClient client) {
         if (!validTableId(tableId)) {
             clientException(client, new IllegalArgumentException("Table id already choosen!"));
@@ -254,12 +254,12 @@ public class Server extends AbstractServer implements Observer {
             updatePlayerInfo(p, client);
         }
     }
-    
+
     private void joinTable(String tableId, ConnectionToClient client) {
         if (client.getInfo(TABLE_MAPINFO) != null) {
             clientException(client, new GameException("Already in a game"));
         } else {
-            Table t = getTableById(tableId);
+            Model t = getTableById(tableId);
             Player p = (Player) client.getInfo(PLAYER_MAPINFO);
             if (t == null) {
                 clientException(client, new IllegalArgumentException("No such table!"));
@@ -285,16 +285,16 @@ public class Server extends AbstractServer implements Observer {
             }
         }
     }
-    
-    private Table getTableById(String tableId) {
-        for (Table t : tables) {
+
+    private Model getTableById(String tableId) {
+        for (Model t : tables) {
             if (t.is(tableId)) {
                 return t;
             }
         }
         return null;
     }
-    
+
     private ConnectionToClient getClientById(String playerId) {
         for (Thread t : getClientConnections()) {
             ConnectionToClient client = (ConnectionToClient) t;
@@ -305,7 +305,7 @@ public class Server extends AbstractServer implements Observer {
         }
         return null;
     }
-    
+
     private boolean validTableId(String tableId) {
         for (Thread th : this.getClientConnections()) {
             ConnectionToClient client = (ConnectionToClient) th;
@@ -316,7 +316,7 @@ public class Server extends AbstractServer implements Observer {
         }
         return true;
     }
-    
+
     private void removePlayer(ConnectionToClient client) {
         Table t = (Table) client.getInfo(TABLE_MAPINFO);
         if (t != null) {
@@ -341,7 +341,7 @@ public class Server extends AbstractServer implements Observer {
             }
         }
     }
-    
+
     private void drawLine(ConnectionToClient client, Message msg) {
         ConnectionToClient partner = (ConnectionToClient) client.getInfo(PARTNER_CLIENT_INFO);
         if (partner == null) {
@@ -355,7 +355,7 @@ public class Server extends AbstractServer implements Observer {
             }
         }
     }
-    
+
     private void guess(ConnectionToClient client, Message msg) {
         Table t = (Table) client.getInfo(TABLE_MAPINFO);
         Player p = (Player) client.getInfo(PLAYER_MAPINFO);
@@ -375,5 +375,5 @@ public class Server extends AbstractServer implements Observer {
             }
         }
     }
-    
+
 }
