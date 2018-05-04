@@ -1,4 +1,4 @@
-package DB;
+package DB.db;
 
 /**
  * Classe d'accès au gestionnaire de persistance pour les Séquences

@@ -1,7 +1,7 @@
 /*
  * DBManager.java
  */
-package DB;
+package DB.db;
 
 import java.sql.*;
 
