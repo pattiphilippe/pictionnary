@@ -9,23 +9,20 @@ import java.io.Serializable;
 public class Table implements Serializable {
 
     private final String tableId;
-    private final boolean isOpen;
+    //TODO delete isOpen
     private final String drawerName;
     private final String guesserName;
+    private final String state;
 
-    public Table(String tableId, boolean isOpen, String... playerNames) {
+    public Table(String tableId, String state, String... playerNames) {
         this.tableId = tableId;
-        this.isOpen = isOpen;
         this.drawerName = playerNames[0];
         this.guesserName = playerNames[1];
+        this.state = state;
     }
 
     public String getTableId() {
         return tableId;
-    }
-
-    public boolean isOpen() {
-        return isOpen;
     }
 
     public String getDrawerName() {
@@ -34,5 +31,9 @@ public class Table implements Serializable {
 
     public String getGuesserName() {
         return guesserName;
+    }
+
+    public String getState() {
+        return state;
     }
 }

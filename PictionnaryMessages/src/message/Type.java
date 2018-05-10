@@ -16,5 +16,7 @@ public enum Type {
     WON,
     ERROR,
     EXIT,
-    EXIT_TABLE;
+    EXIT_TABLE,
+    SERVER_CLOSED,
+    GAME_STATE;
 }
