@@ -25,11 +25,11 @@ public abstract class Model extends Observable {
     public abstract boolean is(String tableId);
 
     /**
-     * Returns true if the game is finished.
+     * Returns the current state of the table.
      *
      * @return
      */
-    public abstract boolean isFinished();
+    public abstract GameState getState();
 
     /**
      * Returns all the previous guesses.
@@ -37,14 +37,6 @@ public abstract class Model extends Observable {
      * @return
      */
     public abstract List<String> getGuesses();
-
-    /**
-     * Returns true if the table is open. If the table is open, a player can
-     * join it.
-     *
-     * @return
-     */
-    public abstract boolean isOpen();
 
     /**
      * Returns the array containing the player names on the table. There is a
@@ -101,4 +93,11 @@ public abstract class Model extends Observable {
      * @return
      */
     public abstract boolean isEmpty();
+
+    /**
+     * Returns the last guess.
+     *
+     * @return
+     */
+    public abstract String getLastGuess();
 }
