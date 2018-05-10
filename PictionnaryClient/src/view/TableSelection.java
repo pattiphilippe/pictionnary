@@ -14,7 +14,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import message.Message;
 import message.Type;
-import client.Client;
+import client.Model;
 import javafx.application.Platform;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -91,7 +91,7 @@ public class TableSelection extends HBox implements Observer {
         });
     }
 
-    public void setModel(Client client) {
+    public void setModel(Model client) {
         client.addObserver(this);
         this.tables = client.getTables();
         updateTableView();

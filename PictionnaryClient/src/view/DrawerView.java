@@ -9,7 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import message.Message;
-import message.util.Player;
+import message.util.GameState;
 import pictionnary.drawingPane.DrawingPaneControl;
 
 /**
@@ -35,9 +35,14 @@ public class DrawerView extends VBox implements Observer {
         baseView.setController(controller);
         drawingPane.setModifiable(false);
         this.drawingPane.lastLineProperty().addListener((obs, oldVal, newVal) -> {
-            if (drawingPane.isModifiable() && newVal != null) {
-                //TODO clear pane msg?
-                this.controller.drawLine(newVal);
+            //TODO check why drawingPane.isModifiable()?
+            if (drawingPane.isModifiable()) {
+                if (newVal != null) {
+                    //TODO clear pane msg?
+                    this.controller.drawLine(newVal);
+                } else {
+                    this.controller.clearDraw();
+                }
             }
         });
         this.getChildren().add(baseView);
@@ -68,10 +73,9 @@ public class DrawerView extends VBox implements Observer {
                     case GAME_STATE:
                         // redundant code in drawer and guesser View 
                         //(could be upgraded if baseview is Observer of model too)
-                        String state = (String) msg.getContent();
-                        this.baseView.setGameState(state);
-                        //TODO could do a GameState with bool canPlay
-                        drawingPane.setModifiable(state.equals("in_game"));
+                        GameState state = (GameState) msg.getContent();
+                        this.baseView.setGameState(state.toString());
+                        drawingPane.setModifiable(state == GameState.IN_GAME);
                         break;
                 }
             });

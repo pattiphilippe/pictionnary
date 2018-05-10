@@ -29,15 +29,15 @@
                     <VBox.margin>
                         <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
                     </VBox.margin>
-               <columns>
-                  <TableColumn fx:id="tableIdCol" prefWidth="75.0" text="Table Id" />
-                  <TableColumn fx:id="stateCol" prefWidth="75.0" text="State" />
-                  <TableColumn fx:id="drawerCol" prefWidth="75.0" text="Drawer" />
-                  <TableColumn fx:id="guesserCol" prefWidth="75.0" text="Guesser" />
-               </columns>
-               <columnResizePolicy>
-                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-               </columnResizePolicy>
+                    <columns>
+                        <TableColumn fx:id="tableIdCol" prefWidth="75.0" text="Table Id" />
+                        <TableColumn fx:id="stateCol" prefWidth="75.0" text="State" />
+                        <TableColumn fx:id="drawerCol" prefWidth="75.0" text="Drawer" />
+                        <TableColumn fx:id="guesserCol" prefWidth="75.0" text="Guesser" />
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                    </columnResizePolicy>
                 </TableView>
                 <HBox alignment="CENTER_LEFT">
                     <children>

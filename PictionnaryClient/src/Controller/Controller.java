@@ -28,7 +28,7 @@ import view.TableSelection;
 public class Controller implements Runnable, Observer {
 
     //TODO change to model
-    private Client client;
+    private Model client;
     private final Connection connection;
     private final Scene connectionScene;
     private final TableSelection tableSelection;
@@ -222,6 +222,14 @@ public class Controller implements Runnable, Observer {
             client.drawLine(oldVal);
         } catch (IOException ex) {
             exception("Drawing Line error", ex);
+        }
+    }
+
+    public void clearDraw() {
+        try {
+            client.drawLine();
+        } catch (IOException ex) {
+            exception("Clearing draw error", ex);
         }
     }
 

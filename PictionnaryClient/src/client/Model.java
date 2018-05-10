@@ -9,21 +9,27 @@ import pictionnary.drawingPane.DrawingInfos;
  *
  * @author G43197
  */
-public interface Model {
+public abstract class Model extends AbstractClient {
 
-    public List<Table> getTables();
+    public Model(String host, int port) {
+        super(host, port);
+    }
 
-    public void updateName(String name) throws IOException;
+    public abstract List<Table> getTables();
 
-    public void createTable(String tableId) throws IOException;
+    public abstract void updateName(String name) throws IOException;
 
-    public void joinTable(String tableId) throws IOException;
+    public abstract void createTable(String tableId) throws IOException;
 
-    public void guess(String guess) throws IOException;
+    public abstract void joinTable(String tableId) throws IOException;
 
-    public void drawLine(DrawingInfos drawingInfos) throws IOException;
+    public abstract void guess(String guess) throws IOException;
 
-    public void exitTable() throws IOException;
+    public abstract void drawLine(DrawingInfos drawingInfos) throws IOException;
 
-    public void exit();
+    public abstract void drawLine() throws IOException;
+
+    public abstract void exitTable() throws IOException;
+
+    public abstract void exit();
 }

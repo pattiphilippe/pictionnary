@@ -16,7 +16,7 @@ public class TableItem {
 
     public TableItem(Table table) {
         this.tableId = new SimpleStringProperty(table.getTableId());
-        this.state = new SimpleStringProperty(table.getState());
+        this.state = new SimpleStringProperty(table.getState().toString());
         this.drawerName = new SimpleStringProperty(table.getDrawerName());
         this.guesserName = new SimpleStringProperty(table.getGuesserName());
     }

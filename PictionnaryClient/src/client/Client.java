@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import message.Message;
+import message.MessageClearDraw;
 import message.MessageCreate;
 import message.MessageDrawLine;
 import message.MessageError;
@@ -23,7 +24,7 @@ import pictionnary.drawingPane.DrawingInfos;
  *
  * @author Philippe
  */
-public class Client extends AbstractClient implements Model {
+public class Client extends Model {
 
     private final List<Table> tables;
     private boolean closing;
@@ -77,6 +78,7 @@ public class Client extends AbstractClient implements Model {
             case GAME_INIT:
             case ERROR:
             case DRAW_LINE:
+            case CLEAR_DRAW:
             case GUESS:
             case WON:
             case SERVER_CLOSED:
@@ -155,6 +157,10 @@ public class Client extends AbstractClient implements Model {
             } finally {
             }
         }
+    }
+
+    public void drawLine() throws IOException {
+        sendToServer(new MessageClearDraw());
     }
 
 }

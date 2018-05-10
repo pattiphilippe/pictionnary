@@ -11,6 +11,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import message.Message;
+import message.util.GameState;
 import pictionnary.drawingPane.DrawingInfos;
 import pictionnary.drawingPane.DrawingPane;
 
@@ -65,13 +66,18 @@ public class GuesserView extends VBox implements Observer {
                     case DRAW_LINE:
                         drawingPane.addLine((DrawingInfos) msg.getContent());
                         break;
+                    case CLEAR_DRAW:
+                        drawingPane.clearPane();
+                        break;
                     case GUESS:
                         baseView.addGuess((String) msg.getContent());
                         break;
                     case GAME_STATE:
                         // only redundant code in drawer and guesser View 
                         //(could be upgraded if baseview is Observer of model too)
-                        this.baseView.setGameState((String) msg.getContent());
+                        GameState state = (GameState) msg.getContent();
+                        this.baseView.setGameState(state.toString());
+                        this.guessBtn.setDisable(state != GameState.IN_GAME);
                         break;
                 }
             });
