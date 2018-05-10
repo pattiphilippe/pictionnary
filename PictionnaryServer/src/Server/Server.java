@@ -4,7 +4,7 @@ import DB.db.DbException;
 import MultiPModel.MultiPlayerFacade;
 import MultiPModel.MultiPlayerModel;
 import OneVOneModel.GameException;
-import OneVOneModel.GameState;
+import static OneVOneModel.GameState.*;
 import OneVOneModel.Model;
 import OneVOneModel.Player;
 import static OneVOneModel.PlayerRole.DRAWER;
@@ -33,6 +33,7 @@ import message.MessageTables;
 import message.MessageWon;
 import static message.Type.GAME_INIT;
 import message.util.PlayerRole;
+import message.util.GameState;
 
 /**
  * Pictionnary Server
@@ -79,7 +80,7 @@ public class Server extends AbstractServer implements Observer {
     public List<message.util.Table> getTables() {
         return model.getTables().stream()
                 .map(t -> new message.util.Table(
-                t.getId(), t.getState().toString(), t.getPlayerNames()))
+                t.getId(), toMsgGameState(t.getState()), t.getPlayerNames()))
                 .collect(Collectors.toList());
     }
 
@@ -151,7 +152,8 @@ public class Server extends AbstractServer implements Observer {
                     profile(client, message);
                     break;
                 case DRAW_LINE:
-                    drawLine(client, message);
+                case CLEAR_DRAW:
+                    draw(client, message);
                     break;
                 case GUESS:
                     model.guess((String) client.getInfo(USERNAME_MAPINFO), (String) message.getContent());
@@ -207,7 +209,7 @@ public class Server extends AbstractServer implements Observer {
                     //for players on changed table
                     for (String name : t.getPlayerNames()) {
                         ConnectionToClient client = getClientById(name);
-                        sendToClient(client, new MessageGameState(t.getState().toString()));
+                        sendToClient(client, new MessageGameState(toMsgGameState(t.getState())));
                         try {
                             if (msg != null && (msg.getType() != GAME_INIT || model.getRole(name) == DRAWER)) {
                                 sendToClient(client, msg);
@@ -239,6 +241,7 @@ public class Server extends AbstractServer implements Observer {
         String partnerUsername = model.getPartnerUsername(username);
         ConnectionToClient partner = getClientById(partnerUsername);
         client.setInfo(PARTNER_CLIENT_INFO, partner);
+        partner.setInfo(PARTNER_CLIENT_INFO, client);
     }
 
     private void profile(ConnectionToClient client, Message message) throws DbException {
@@ -258,13 +261,13 @@ public class Server extends AbstractServer implements Observer {
         }
     }
 
-    private void drawLine(ConnectionToClient client, Message msg) throws GameException {
+    private void draw(ConnectionToClient client, Message msg) throws GameException {
         ConnectionToClient partner = (ConnectionToClient) client.getInfo(PARTNER_CLIENT_INFO);
         if (partner == null) {
             throw new GameException("No Partner to play!");
         } else {
             Table t = model.getTable((String) client.getInfo(USERNAME_MAPINFO));
-            if (t.getState() != GameState.IN_GAME) {
+            if (t.getState() != IN_GAME) {
                 throw new GameException("Can't send draw, not currently in game!");
             } else {
                 sendToClient(partner, msg);
@@ -294,5 +297,9 @@ public class Server extends AbstractServer implements Observer {
             } catch (DbException ex) {
             }
         }
+    }
+
+    private GameState toMsgGameState(OneVOneModel.GameState state) {
+        return GameState.valueOf(state.toString());
     }
 }
