@@ -31,8 +31,8 @@
                     </VBox.margin>
                <columns>
                   <TableColumn fx:id="tableIdCol" prefWidth="75.0" text="Table Id" />
-                  <TableColumn fx:id="isOpenCol" prefWidth="75.0" text="Is Open" />
-                  <TableColumn fx:id="drawerCol" prefWidth="75.0" text="Drawer-" />
+                  <TableColumn fx:id="stateCol" prefWidth="75.0" text="State" />
+                  <TableColumn fx:id="drawerCol" prefWidth="75.0" text="Drawer" />
                   <TableColumn fx:id="guesserCol" prefWidth="75.0" text="Guesser" />
                </columns>
                <columnResizePolicy>

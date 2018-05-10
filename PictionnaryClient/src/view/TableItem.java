@@ -1,6 +1,5 @@
 package view;
 
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import message.util.Table;
 
@@ -11,13 +10,13 @@ import message.util.Table;
 public class TableItem {
 
     private final SimpleStringProperty tableId;
-    private final SimpleBooleanProperty isOpen;
+    private final SimpleStringProperty state;
     private final SimpleStringProperty drawerName;
     private final SimpleStringProperty guesserName;
 
     public TableItem(Table table) {
         this.tableId = new SimpleStringProperty(table.getTableId());
-        this.isOpen = new SimpleBooleanProperty(table.isOpen());
+        this.state = new SimpleStringProperty(table.getState());
         this.drawerName = new SimpleStringProperty(table.getDrawerName());
         this.guesserName = new SimpleStringProperty(table.getGuesserName());
     }
@@ -30,12 +29,12 @@ public class TableItem {
         this.tableId.set(tableId);
     }
 
-    public boolean isOpen() {
-        return isOpen.get();
+    public String getState() {
+        return state.get();
     }
 
-    public void setIsOpen(boolean isOpen) {
-        this.isOpen.set(isOpen);
+    public void setState(String state) {
+        this.state.set(state);
     }
 
     public String getDrawerName() {
@@ -58,8 +57,8 @@ public class TableItem {
         return tableId;
     }
 
-    public SimpleBooleanProperty isOpenProperty() {
-        return isOpen;
+    public SimpleStringProperty stateProperty() {
+        return state;
     }
 
     public SimpleStringProperty drawerNameProperty() {
@@ -72,7 +71,7 @@ public class TableItem {
 
     @Override
     public String toString() {
-        return "TableItem{" + "tableId=" + tableId + ", isOpen=" + isOpen + ", drawerName=" + drawerName + ", guesserName=" + guesserName + '}';
+        return "TableItem{" + "tableId=" + tableId + ", state=" + state + ", drawerName=" + drawerName + ", guesserName=" + guesserName + '}';
     }
 
 }

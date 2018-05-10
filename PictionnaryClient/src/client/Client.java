@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import message.Message;
 import message.MessageCreate;
 import message.MessageDrawLine;
+import message.MessageError;
 import message.MessageExit;
 import message.MessageExitTable;
 import message.MessageGuess;
@@ -23,6 +26,7 @@ import pictionnary.drawingPane.DrawingInfos;
 public class Client extends AbstractClient implements Model {
 
     private final List<Table> tables;
+    private boolean closing;
 
     /**
      * Constructs the client. Opens the connection with the server. Sends the
@@ -38,7 +42,22 @@ public class Client extends AbstractClient implements Model {
         super(host, port);
         openConnection();
         updateName(name);
+        this.closing = false;
         this.tables = new ArrayList<>();
+    }
+
+    @Override
+    protected void connectionClosed() {
+        if (!closing) {
+            notifyChange(new MessageError(new Exception("Client connection closed! "
+                    + "The server could've crashed. Sorry for the inconvenience."
+                    + " Please try to reconnect later")));
+            try {
+                quit();
+            } catch (IOException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     @Override
@@ -50,6 +69,7 @@ public class Client extends AbstractClient implements Model {
     protected void handleMessageFromServer(Object msg) {
         Message message = (Message) msg;
         Type type = message.getType();
+        System.out.println("client:: message received of type : " + type);
         switch (type) {
             case TABLES:
                 updateTables((List<Table>) message.getContent());
@@ -59,6 +79,8 @@ public class Client extends AbstractClient implements Model {
             case DRAW_LINE:
             case GUESS:
             case WON:
+            case SERVER_CLOSED:
+            case GAME_STATE:
                 notifyChange(message);
                 break;
             default:
@@ -119,8 +141,20 @@ public class Client extends AbstractClient implements Model {
     }
 
     @Override
-    public void exit() throws IOException {
-        sendToServer(new MessageExit());
+    public void exit() {
+        closing = true;
+        try {
+            if (isConnected()) {
+                sendToServer(new MessageExit());
+            }
+        } catch (IOException ex) {
+        } finally {
+            try {
+                closeConnection();
+            } catch (IOException ex) {
+            } finally {
+            }
+        }
     }
 
 }

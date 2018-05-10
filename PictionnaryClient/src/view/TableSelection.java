@@ -39,13 +39,11 @@ public class TableSelection extends HBox implements Observer {
     @FXML
     private TableColumn<TableItem, String> tableIdCol;
     @FXML
-    private TableColumn<TableItem, Boolean> isOpenCol;
+    private TableColumn<TableItem, String> stateCol;
     @FXML
     private TableColumn<TableItem, String> drawerCol;
     @FXML
     private TableColumn<TableItem, String> guesserCol;
-    @FXML
-    private TableColumn<TableItem, Boolean> joinCol;
     @FXML
     private TextField tableTfd;
     @FXML
@@ -80,7 +78,7 @@ public class TableSelection extends HBox implements Observer {
             return row;
         });
         tableIdCol.setCellValueFactory(new PropertyValueFactory<>("tableId"));
-        isOpenCol.setCellValueFactory(new PropertyValueFactory<>("isOpen"));
+        stateCol.setCellValueFactory(new PropertyValueFactory<>("state"));
         drawerCol.setCellValueFactory(new PropertyValueFactory<>("drawerName"));
         guesserCol.setCellValueFactory(new PropertyValueFactory<>("guesserName"));
 

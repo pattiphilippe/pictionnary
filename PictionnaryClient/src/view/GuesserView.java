@@ -68,8 +68,10 @@ public class GuesserView extends VBox implements Observer {
                     case GUESS:
                         baseView.addGuess((String) msg.getContent());
                         break;
-                    case WON:
-                        this.baseView.setGameState("Won");
+                    case GAME_STATE:
+                        // only redundant code in drawer and guesser View 
+                        //(could be upgraded if baseview is Observer of model too)
+                        this.baseView.setGameState((String) msg.getContent());
                         break;
                 }
             });

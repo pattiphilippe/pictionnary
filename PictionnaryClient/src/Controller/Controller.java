@@ -30,6 +30,7 @@ public class Controller implements Runnable, Observer {
     //TODO change to model
     private Client client;
     private final Connection connection;
+    private final Scene connectionScene;
     private final TableSelection tableSelection;
     private final Scene tableScene;
     private final DrawerView drawerView;
@@ -46,6 +47,7 @@ public class Controller implements Runnable, Observer {
         this.primaryStage.setOnCloseRequest(e -> exit());
         this.primaryStage.getIcons().add(new Image("/Controller/icon.png"));
         this.connection = new Connection();
+        this.connectionScene = new Scene(connection);
         this.connection.setController(this);
         this.tableSelection = new TableSelection();
         this.tableSelection.setController(this);
@@ -91,6 +93,16 @@ public class Controller implements Runnable, Observer {
                         won.show();
                     case ERROR:
                         exception(errorContext, (Exception) msg.getContent());
+                        if (!client.isConnected()) {
+                            client.exit();
+                            setConnectionView();
+                        }
+                        break;
+                    case SERVER_CLOSED:
+                        exception("Server closed", new Exception("An error has occured,"
+                                + " the server has closed. Sorry for the inconvenience. "
+                                + "Please reconnect later..."));
+                        exit();
                         break;
                     default:
                 }
@@ -100,10 +112,14 @@ public class Controller implements Runnable, Observer {
 
     public void connect(String host, int port, String username) {
         try {
-            client = new Client(host, port, username);
+            if (client == null || !client.isConnected()) {
+                client = new Client(host, port, username);
+            } else {
+                client.updateName(username);
+            }
             initViewsObservable();
         } catch (IOException ex) {
-            exception(errorContext, ex);
+            exception(errorContext, new Exception(ex.getMessage() + "\nServer could be closed. Check with the admin."));
         }
     }
 
@@ -124,12 +140,8 @@ public class Controller implements Runnable, Observer {
     }
 
     public void exit() {
-        if (client != null && client.isConnected()) {
-            try {
-                client.exit();
-            } catch (IOException ex) {
-                exception("Exit Server error", ex);
-            }
+        if (client != null) {
+            client.exit();
         }
         Platform.exit();
     }
@@ -181,6 +193,7 @@ public class Controller implements Runnable, Observer {
     }
 
     private void setDrawerView() {
+        //TODO put player name and table name in title for every view
         this.errorContext = "Drawer Error";
         primaryStage.setTitle("Pictionnary - Drawer");
         primaryStage.setScene(drawerScene);
@@ -201,7 +214,7 @@ public class Controller implements Runnable, Observer {
     private void setConnectionView() {
         this.errorContext = "Connection Error";
         primaryStage.setTitle("Pictionnary - Connection");
-        primaryStage.setScene(new Scene(connection));
+        primaryStage.setScene(connectionScene);
     }
 
     public void drawLine(DrawingInfos oldVal) {

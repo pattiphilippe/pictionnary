@@ -25,5 +25,5 @@ public interface Model {
 
     public void exitTable() throws IOException;
 
-    public void exit() throws IOException;
+    public void exit();
 }

@@ -31,12 +31,12 @@ public class DrawerView extends VBox implements Observer {
         this.baseView = new BasePictionnaryView();
         baseView.setCenter(drawingPane);
         baseView.setGuessTitle("To draw :");
-        baseView.setGameState("Waiting for partner");
         this.controller = controller;
         baseView.setController(controller);
         drawingPane.setModifiable(false);
         this.drawingPane.lastLineProperty().addListener((obs, oldVal, newVal) -> {
             if (drawingPane.isModifiable() && newVal != null) {
+                //TODO clear pane msg?
                 this.controller.drawLine(newVal);
             }
         });
@@ -55,18 +55,23 @@ public class DrawerView extends VBox implements Observer {
                     case GAME_INIT:
                         word.setText((String) msg.getContent());
                         baseView.addToWordToGuessBox(word);
-                        baseView.setGameState("In game");
                         break;
                     case PROFILE:
-                        Player p = (Player) msg.getContent();
-                        drawingPane.setModifiable(p.hasPartner());
+                        //TODO check profile infos 
+//                        Player p = (Player) msg.getContent();
+//                        drawingPane.setModifiable(p.hasPartner());
                         break;
                     case GUESS:
+                        // redundant code in drawer and guesser View 
                         baseView.addGuess((String) msg.getContent());
                         break;
-                    case WON:
-                        this.drawingPane.setModifiable(true);
-                        baseView.setGameState("Won");
+                    case GAME_STATE:
+                        // redundant code in drawer and guesser View 
+                        //(could be upgraded if baseview is Observer of model too)
+                        String state = (String) msg.getContent();
+                        this.baseView.setGameState(state);
+                        //TODO could do a GameState with bool canPlay
+                        drawingPane.setModifiable(state.equals("in_game"));
                         break;
                 }
             });
