@@ -9,12 +9,12 @@ import java.io.Serializable;
 public class Table implements Serializable {
 
     private final String tableId;
-    //TODO delete isOpen
+    //TODO delete isOpen in TAble
     private final String drawerName;
     private final String guesserName;
-    private final String state;
+    private final GameState state;
 
-    public Table(String tableId, String state, String... playerNames) {
+    public Table(String tableId, GameState state, String... playerNames) {
         this.tableId = tableId;
         this.drawerName = playerNames[0];
         this.guesserName = playerNames[1];
@@ -33,7 +33,7 @@ public class Table implements Serializable {
         return guesserName;
     }
 
-    public String getState() {
+    public GameState getState() {
         return state;
     }
 }

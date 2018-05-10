@@ -1,14 +1,16 @@
 package message;
 
+import message.util.GameState;
+
 /**
  *
  * @author Philippe
  */
 public class MessageGameState implements Message {
 
-    private final String state;
+    private final GameState state;
 
-    public MessageGameState(String state) {
+    public MessageGameState(GameState state) {
         this.state = state;
     }
 

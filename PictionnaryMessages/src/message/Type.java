@@ -18,5 +18,6 @@ public enum Type {
     EXIT,
     EXIT_TABLE,
     SERVER_CLOSED,
-    GAME_STATE;
+    GAME_STATE, 
+    CLEAR_DRAW;
 }
