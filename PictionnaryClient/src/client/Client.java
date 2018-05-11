@@ -83,6 +83,7 @@ public class Client extends Model {
             case WON:
             case SERVER_CLOSED:
             case GAME_STATE:
+            case STATS:
                 notifyChange(message);
                 break;
             default:

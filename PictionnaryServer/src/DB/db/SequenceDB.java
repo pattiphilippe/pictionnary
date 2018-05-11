@@ -12,11 +12,11 @@ public class SequenceDB {
     static synchronized int getNextNum(String sequence) throws DbException {
         try {
             java.sql.Connection connexion = DBManager.getConnection();
-            String query = "Update SEQUENCES set sValue = sValue+1 where id='" + sequence + "'";
+            String query = "Update SEQUENCES set sValue = sValue+1 where sid='" + sequence + "'";
             java.sql.PreparedStatement update = connexion.prepareStatement(query);
             update.execute();
             java.sql.Statement stmt = connexion.createStatement();
-            query = "Select sValue FROM Sequences where id='" + sequence + "'";
+            query = "Select sValue FROM Sequences where sid='" + sequence + "'";
             java.sql.ResultSet rs = stmt.executeQuery(query);
             int nvId;
             if (rs.next()) {

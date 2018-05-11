@@ -11,15 +11,17 @@ import static OneVOneModel.GameState.*;
  */
 public class Table extends Model {
 
-    private final String id;
+    private int id;
+    private final String tableName;
     private final List<String> guesses;
     private final Player[] players;
     private final String[] playerNames;
     private final String wordToGuess;
     private GameState state;
 
-    public Table(String id, Player drawer) {
-        this.id = id;
+    public Table(String tableName, Player drawer, String wordToGuess) {
+        this.id = 0;
+        this.tableName = tableName;
         this.guesses = new ArrayList<>();
         this.wordToGuess = Words.random();
         this.state = WAITING_FOR_PARTNER;
@@ -31,14 +33,23 @@ public class Table extends Model {
         drawer.setRole(PlayerRole.DRAWER);
     }
 
+    public Table(String tableName, Player drawer) {
+        this(tableName, drawer, Words.random());
+    }
+
     @Override
-    public String getId() {
+    public int getId() {
         return id;
     }
 
     @Override
-    public boolean is(String tableId) {
-        return (this.id == null ? tableId == null : this.id.equals(tableId));
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    @Override
+    public String getTableName() {
+        return tableName;
     }
 
     @Override
@@ -96,7 +107,11 @@ public class Table extends Model {
                 playerNames[i] = null;
                 player.setRole(PlayerRole.NONE);
                 player.setTable(null);
-                state = isEmpty() ? EMPTY : PARTNER_LEFT;
+                if (isEmpty()) {
+                    state = EMPTY;
+                } else if (state != WON) {
+                    state = PARTNER_LEFT;
+                }
                 setChanged();
                 notifyObservers();
                 return;

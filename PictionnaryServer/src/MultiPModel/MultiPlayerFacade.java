@@ -1,5 +1,6 @@
 package MultiPModel;
 
+import DB.business.DbBusinessException;
 import DB.db.DbException;
 import OneVOneModel.GameException;
 import OneVOneModel.PlayerRole;
@@ -17,19 +18,19 @@ import java.util.Observable;
 public abstract class MultiPlayerFacade extends Observable {
 
     //TODO javadoc
-    public abstract void createPlayer(String playerName) throws DbException;
+    public abstract void createPlayer(String playerName) throws GameException, DbBusinessException;
 
-    public abstract void createTable(String playerName, String tableName) throws GameException, DbException;
+    public abstract void createTable(String playerName, String tableName) throws GameException;
 
-    public abstract void joinTable(String playerName, String tableId) throws GameException;
+    public abstract void joinTable(String playerName, String tableId) throws GameException, DbBusinessException;
 
-    public abstract void leaveTable(String playerName) throws GameException;
+    public abstract void leaveTable(String playerName) throws GameException, DbBusinessException;
 
-    public abstract void exitGame(String playerName);
+    public abstract void exitGame(String playerName) throws GameException, DbBusinessException;
 
     public abstract void guess(String playerName, String guess) throws GameException;
 
-    public abstract void updateUsername(String oldUsername, String newUsername) throws DbException;
+    public abstract void updateUsername(String oldUsername, String newUsername) throws GameException;
 
     //TODO check usage, shouldn't return Tables 
     public abstract List<Table> getTables();

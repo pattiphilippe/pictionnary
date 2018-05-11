@@ -1,6 +1,9 @@
 package Server;
 
+import DB.business.DbBusinessException;
+import DB.business.VisitorFacade;
 import DB.db.DbException;
+import DB.dto.GameDto;
 import MultiPModel.MultiPlayerFacade;
 import MultiPModel.MultiPlayerModel;
 import OneVOneModel.GameException;
@@ -15,8 +18,11 @@ import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
@@ -29,11 +35,13 @@ import message.MessageGameState;
 import message.MessageGuess;
 import message.MessageProfile;
 import message.MessageServerClosed;
+import message.MessageStats;
 import message.MessageTables;
 import message.MessageWon;
 import static message.Type.GAME_INIT;
 import message.util.PlayerRole;
 import message.util.GameState;
+import message.util.Stats;
 
 /**
  * Pictionnary Server
@@ -62,13 +70,18 @@ public class Server extends AbstractServer implements Observer {
         return null;
     }
 
-    private final MultiPlayerFacade model;
+    //TODO SET FINAL
+    private MultiPlayerFacade model;
 
     public Server() throws IOException {
         super(PORT);
-
-        model = new MultiPlayerModel();
-        model.addObserver(this);
+        model = null;
+        try {
+            model = new MultiPlayerModel();
+            model.addObserver(this);
+        } catch (DbBusinessException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
         this.listen();
     }
 
@@ -80,7 +93,7 @@ public class Server extends AbstractServer implements Observer {
     public List<message.util.Table> getTables() {
         return model.getTables().stream()
                 .map(t -> new message.util.Table(
-                t.getId(), toMsgGameState(t.getState()), t.getPlayerNames()))
+                t.getTableName(), toMsgGameState(t.getState()), t.getPlayerNames()))
                 .collect(Collectors.toList());
     }
 
@@ -170,8 +183,8 @@ public class Server extends AbstractServer implements Observer {
                 default:
                     throw new IllegalArgumentException("Message not handled");
             }
-        } catch (DbException | GameException | IOException | IllegalArgumentException e) {
-            if (e instanceof DbException || e instanceof GameException) {
+        } catch (GameException | DbBusinessException | IOException | IllegalArgumentException e) {
+            if (e instanceof GameException || e instanceof DbBusinessException) {
                 clientException(client, new Exception(e.getClass().getName() + " : " + e.getMessage()));
             } else {
                 clientException(client, e);
@@ -203,7 +216,9 @@ public class Server extends AbstractServer implements Observer {
                             break;
                         case WON:
                             String[] names = t.getPlayerNames();
-                            msg = new MessageWon(names[0], names[1], t.getWordToGuess(), t.getGuesses().size());
+                            if (names[0] != null && names[1] != null) {
+                                msg = new MessageWon(names[0], names[1], t.getWordToGuess(), t.getGuesses().size());
+                            }
                             break;
                     }
                     //for players on changed table
@@ -225,17 +240,70 @@ public class Server extends AbstractServer implements Observer {
         }
     }
 
+    private GameState toMsgGameState(OneVOneModel.GameState state) {
+        return GameState.valueOf(state.toString());
+    }
+
     private void updatePlayerInfo(Player p, ConnectionToClient client) {
-        //TODO optimize
         boolean hasPartner = model.getPartnerUsername((String) client.getInfo(USERNAME_MAPINFO)) != null;
         PlayerRole role = PlayerRole.valueOf(p.getRole().toString());
         sendToClient(client, new MessageProfile(p.getUsername(), role, hasPartner));
         if (p.getRole() == OneVOneModel.PlayerRole.NONE) {
+            Stats stats = getStats(client);
+            if (stats != null) {
+                sendToClient(client, new MessageStats(getStats(client)));
+            }
             sendToClient(client, new MessageTables(getTables()));
         }
     }
 
-    private void joinTable(ConnectionToClient client, Message message) throws GameException {
+    private Stats getStats(ConnectionToClient client) {
+        try {
+            String username = (String) client.getInfo(USERNAME_MAPINFO);
+            Collection<GameDto> games = VisitorFacade.getGames(username);
+            int clientId = VisitorFacade.getPlayer(username).getId();
+            int nbWon = 0, nbLeft = 0, nbPartnerLeft = 0, totGames = 0, nbDrawed = 0, partnerId;
+            Map<Integer, Integer> nbPlayedWith = new HashMap<>();
+            for (GameDto game : games) {
+                totGames++;
+                if (game.getEndTime() != null) {
+                    if (game.getStopPlayer() == 0) {
+                        nbWon++;
+                    } else {
+                        if (game.getStopPlayer() == clientId) {
+                            nbLeft++;
+                        } else {
+                            nbPartnerLeft++;
+                        }
+                    }
+                }
+                if (game.getDrawer() == clientId) {
+                    nbDrawed++;
+                    partnerId = game.getPartner();
+                } else {
+                    partnerId = game.getDrawer();
+                }
+                if (nbPlayedWith.containsKey(partnerId)) {
+                    nbPlayedWith.put(partnerId, nbPlayedWith.get(partnerId) + 1);
+                } else {
+                    nbPlayedWith.put(partnerId, 1);
+                }
+            }
+            int nbFailed = totGames - (nbWon + nbLeft + nbPartnerLeft), nbGuessed = totGames - nbDrawed;
+            Map<String, Integer> timesPlayedWith = new HashMap<>();
+            nbPlayedWith.forEach((id, value) -> {
+                try {
+                    timesPlayedWith.put(VisitorFacade.getPlayer(id).getName(), value);
+                } catch (DbBusinessException ex) {
+                }
+            });
+            return new Stats(totGames, nbWon, nbLeft, nbPartnerLeft, nbFailed, nbDrawed, nbGuessed, timesPlayedWith);
+        } catch (DbBusinessException e) {
+            return null;
+        }
+    }
+
+    private void joinTable(ConnectionToClient client, Message message) throws GameException, DbBusinessException {
         String username = (String) client.getInfo(USERNAME_MAPINFO);
         model.joinTable(username, (String) message.getContent());
         String partnerUsername = model.getPartnerUsername(username);
@@ -244,7 +312,7 @@ public class Server extends AbstractServer implements Observer {
         partner.setInfo(PARTNER_CLIENT_INFO, client);
     }
 
-    private void profile(ConnectionToClient client, Message message) throws DbException {
+    private void profile(ConnectionToClient client, Message message) throws GameException {
         String oldUsername = (String) client.getInfo(USERNAME_MAPINFO);
         String newUsername = ((message.util.Player) message.getContent()).getUsername();
         client.setInfo(USERNAME_MAPINFO, newUsername); //not the criteria for id : if name update fails, we don't care
@@ -254,10 +322,12 @@ public class Server extends AbstractServer implements Observer {
             } else {
                 model.updateUsername(oldUsername, newUsername);
             }
-        } catch (DbException dbException) {
-            clientException(client, dbException);
+        } catch (GameException dbException) {
+//            clientException(client, dbException);
             client.setInfo(USERNAME_MAPINFO, oldUsername);
             throw dbException;
+        } catch (DbBusinessException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -299,7 +369,4 @@ public class Server extends AbstractServer implements Observer {
         }
     }
 
-    private GameState toMsgGameState(OneVOneModel.GameState state) {
-        return GameState.valueOf(state.toString());
-    }
 }

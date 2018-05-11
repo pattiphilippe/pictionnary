@@ -10,19 +10,23 @@ import java.util.Observable;
 public abstract class Model extends Observable {
 
     /**
+     * Returns the table id.
+     *
+     * @return
+     */
+    public abstract int getId();
+
+    /**
+     * Sets the id to the given id.
+     */
+    public abstract void setId(int id);
+
+    /**
      * Returns the id of the model.
      *
      * @return
      */
-    public abstract String getId();
-
-    /**
-     * Returns true if this table has the given id.
-     *
-     * @param tableId
-     * @return
-     */
-    public abstract boolean is(String tableId);
+    public abstract String getTableName();
 
     /**
      * Returns the current state of the table.

@@ -27,7 +27,7 @@ public class PlayerDb {
             java.sql.PreparedStatement update;
             update = connection.prepareStatement("Update player set "
                     + " pname=?,"
-                    + "where id= ?");
+                    + "where pid= ?");
             update.setString(1, player.getName());
             update.setInt(2, player.getId());
             update.executeUpdate();
@@ -62,14 +62,14 @@ public class PlayerDb {
             java.sql.Connection connexion = DBManager.getConnection();
             java.sql.PreparedStatement stmt;
             String where = "";
-            if (sel.getId() != 0) {
-                where = where + " id = ? ";
+            if (sel.getId() != null && sel.getId() != 0) {
+                where = where + " pid = ? ";
             }
             if (sel.getName() != null && !sel.getName().equals("")) {
                 if (!where.equals("")) {
                     where = where + " AND ";
                 }
-                where = where + " label like ? ";
+                where = where + " pName like ? ";
             }
 
             if (where.length() != 0) {
@@ -77,13 +77,13 @@ public class PlayerDb {
                 query = query + where;
                 stmt = connexion.prepareStatement(query);
                 int i = 1;
-                if (sel.getId() != 0) {
+                if (sel.getId() != null && sel.getId() != 0) {
                     stmt.setInt(i, sel.getId());
                     i++;
                 }
 
                 if (sel.getName() != null && !sel.getName().equals("")) {
-                    stmt.setString(i, sel.getName() + "%");
+                    stmt.setString(i, sel.getName());
                     i++;
                 }
 
@@ -100,18 +100,12 @@ public class PlayerDb {
             throw new DbException("Instanciation de Player impossible:\rSQLException: " + eSQL.getMessage());
         }
         return al;
-
-        /*
-         * Inspirez-vous de la méthode analogue de CategorieDB pour écrire cette fonction
-         *
-         *
-         */
     }
 
     public static void deleteDb(int id) throws DbException {
         try {
             java.sql.Statement stmt = DBManager.getConnection().createStatement();
-            stmt.execute("Delete from player where id=" + id);
+            stmt.execute("Delete from player where pid=" + id);
         } catch (Exception ex) {
             throw new DbException("Player: suppression impossible\n" + ex.getMessage());
         }

@@ -19,6 +19,7 @@ import view.Connection;
 import view.DrawerView;
 import view.GuesserView;
 import view.MyAlert;
+import view.StatsView;
 import view.TableSelection;
 
 /**
@@ -39,8 +40,10 @@ public class Controller implements Runnable, Observer {
     private final Scene guesserScene;
     private final Stage primaryStage;
     private final MyAlert error;
-    private final Dialog won;
+    private final Alert won;
     private String errorContext;
+    private final StatsView statsView;
+    private final Stage statsStage;
 
     public Controller(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -58,9 +61,13 @@ public class Controller implements Runnable, Observer {
         this.guesserScene = new Scene(guesserView);
         this.error = new MyAlert(Alert.AlertType.ERROR);
         setDialogIcon(error);
-        this.won = new Dialog();
+        this.won = new Alert(Alert.AlertType.INFORMATION);
         setDialogIcon(won);
-        won.setTitle("Game Won");
+        this.won.setTitle("Game Won");
+        this.statsView = new StatsView(10);
+        this.statsStage = new Stage();
+        this.statsStage.setScene(new Scene(statsView));
+        this.statsStage.getIcons().add(new Image("/Controller/icon.png"));
     }
 
     private void setDialogIcon(Dialog dialog) {
@@ -91,6 +98,7 @@ public class Controller implements Runnable, Observer {
                                 + " in " + wonInfos.getNbGuesses() + "tries."
                                 + "\n You can now leave the table.");
                         won.show();
+                        break;
                     case ERROR:
                         exception(errorContext, (Exception) msg.getContent());
                         if (!client.isConnected()) {
@@ -103,6 +111,9 @@ public class Controller implements Runnable, Observer {
                                 + " the server has closed. Sorry for the inconvenience. "
                                 + "Please reconnect later..."));
                         exit();
+                        break;
+                    case STATS:
+                        statsStage.show();
                         break;
                     default:
                 }
@@ -129,6 +140,7 @@ public class Controller implements Runnable, Observer {
         tableSelection.setModel(client);
         client.addObserver(drawerView);
         client.addObserver(guesserView);
+        client.addObserver(statsView);
     }
 
     public void exitTable() {
@@ -215,6 +227,9 @@ public class Controller implements Runnable, Observer {
         this.errorContext = "Connection Error";
         primaryStage.setTitle("Pictionnary - Connection");
         primaryStage.setScene(connectionScene);
+        if (statsStage.isShowing()) {
+            statsStage.hide();
+        }
     }
 
     public void drawLine(DrawingInfos oldVal) {
