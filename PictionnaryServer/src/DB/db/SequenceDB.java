@@ -8,6 +8,7 @@ public class SequenceDB {
     static final String GAME = "Game";
     static final String PLAYER = "Player";
     static final String WORD = "Word";
+    static final String PROPOSITION = "Proposition";
 
     static synchronized int getNextNum(String sequence) throws DbException {
         try {

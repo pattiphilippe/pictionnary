@@ -3,6 +3,7 @@ package MultiPModel;
 import DB.business.AdminFacade;
 import DB.business.DbBusinessException;
 import DB.db.DbException;
+import DB.dto.PropositionDto;
 import OneVOneModel.GameException;
 import OneVOneModel.GameState;
 import OneVOneModel.Model;
@@ -10,6 +11,7 @@ import OneVOneModel.Player;
 import OneVOneModel.PlayerRole;
 import OneVOneModel.Table;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Observable;
@@ -135,14 +137,42 @@ public class MultiPlayerModel extends MultiPlayerFacade implements Observer {
                 case WON:
                     try {
                         AdminFacade.gameWon(t.getId());
+                        testPropsDb(t);
                     } catch (DbBusinessException ex) {
+                        //YOU ARE IN THE SH*T
                         Logger.getLogger(MultiPlayerModel.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    break;
+                case IN_GAME:
+                    String guess = t.getLastGuess();
+                    if (guess != null) {
+                        try {
+                            AdminFacade.addWrongGuess(guess, t.getId());
+                            testPropsDb(t);
+                        } catch (DbBusinessException ex) {
+                            //YOU ARE IN THE SH*T
+                            Logger.getLogger(MultiPlayerModel.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                     break;
             }
             setChanged();
             notifyObservers(o);
         }
+    }
+
+    private void testPropsDb(Model t) throws DbBusinessException {
+        Collection<PropositionDto> wrongGuesses = AdminFacade.getPropsByGame(t.getId());
+        System.out.println("Wrong Guesses after new Guess : ");
+        for (PropositionDto prop : wrongGuesses) {
+            System.out.print(prop + ", ");
+        }
+        Collection<PropositionDto> propsWithCount = AdminFacade.getPropsCountByWord(t.getWordToGuess());
+        System.out.print("For word " + t.getWordToGuess() + ", props with count  : ");
+        for (PropositionDto prop : propsWithCount) {
+            System.out.println("(" + prop.getTxt() + ", " + prop.getCount() + "), ");
+        }
+        System.out.println("Avg wrong guesses for word " + t.getWordToGuess() + " : " + AdminFacade.getAvgProps(t.getWordToGuess()));
     }
 
     @Override

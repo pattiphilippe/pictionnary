@@ -2,9 +2,11 @@ package DB.business;
 
 import DB.db.DBManager;
 import DB.db.DbException;
+import DB.db.PropositionDb;
 import DB.db.WordDb;
 import DB.dto.GameDto;
 import DB.dto.PlayerDto;
+import DB.dto.PropositionDto;
 import DB.dto.WordDto;
 import java.util.Collection;
 import java.util.Date;
@@ -19,7 +21,7 @@ public class AdminFacade extends DefaultUser {
         WordDto wordSel = new WordDto(0);
         try {
             DBManager.startTransaction();
-            Collection<WordDto> col = WordDb.getCollection(wordSel);
+            Collection<WordDto> col = WordBr.find(wordSel);
             DBManager.validateTransaction();
             return col;
         } catch (DbException eDB) {
@@ -32,7 +34,6 @@ public class AdminFacade extends DefaultUser {
                 throw new DbBusinessException("Liste des Words inaccessible! \n" + msg, eDB);
             }
         }
-
     }
 
     public static int savePlayer(String playerName) throws DbBusinessException {
@@ -111,6 +112,79 @@ public class AdminFacade extends DefaultUser {
                 msg = ex.getMessage() + "\n" + msg;
             } finally {
                 throw new DbBusinessException("Ne sait pas faire gagner la game/table! \n" + msg, eDB);
+            }
+        }
+    }
+
+    public static void addWrongGuess(String wrongGuess, int gameId) throws DbBusinessException {
+        try {
+            DBManager.startTransaction();
+            PropositionBr.add(new PropositionDto(wrongGuess, gameId, true));
+            DBManager.validateTransaction();
+        } catch (DbException eDB) {
+            String msg = eDB.getMessage();
+            try {
+                DBManager.cancelTransaction();
+            } catch (DbException ex) {
+                msg = ex.getMessage() + "\n" + msg;
+            } finally {
+                throw new DbBusinessException("Ajout de game/table impossible! \n" + msg, eDB);
+            }
+        }
+    }
+
+    public static Collection<PropositionDto> getPropsByGame(int gameId) throws DbBusinessException {
+        PropositionDto propSel = new PropositionDto(gameId, false);
+        try {
+            DBManager.startTransaction();
+            Collection<PropositionDto> col = PropositionBr.find(propSel);
+            DBManager.validateTransaction();
+            return col;
+        } catch (DbException eDB) {
+            String msg = eDB.getMessage();
+            try {
+                DBManager.cancelTransaction();
+            } catch (DbException ex) {
+                msg = ex.getMessage() + "\n" + msg;
+            } finally {
+                throw new DbBusinessException("Liste des Props pour game (" + gameId + ") inaccessible! \n" + msg, eDB);
+            }
+        }
+    }
+
+    public static Collection<PropositionDto> getPropsCountByWord(String word) throws DbBusinessException {
+        try {
+            DBManager.startTransaction();
+
+            Collection<PropositionDto> col = PropositionBr.getPropsWithCount(word);
+            DBManager.validateTransaction();
+            return col;
+        } catch (DbException eDB) {
+            String msg = eDB.getMessage();
+            try {
+                DBManager.cancelTransaction();
+            } catch (DbException ex) {
+                msg = ex.getMessage() + "\n" + msg;
+            } finally {
+                throw new DbBusinessException("Props count by word impossible! \n" + msg, eDB);
+            }
+        }
+    }
+
+    public static int getAvgProps(String word) throws DbBusinessException {
+        try {
+            DBManager.startTransaction();
+            int avg = PropositionBr.getAvgProps(word);
+            DBManager.validateTransaction();
+            return avg;
+        } catch (DbException eDB) {
+            String msg = eDB.getMessage();
+            try {
+                DBManager.cancelTransaction();
+            } catch (DbException ex) {
+                msg = ex.getMessage() + "\n" + msg;
+            } finally {
+                throw new DbBusinessException("Props avg by word impossible! \n" + msg, eDB);
             }
         }
     }

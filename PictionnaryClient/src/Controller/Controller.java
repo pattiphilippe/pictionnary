@@ -198,6 +198,7 @@ public class Controller implements Runnable, Observer {
                 break;
             case NONE:
                 setTablesView();
+                //TODO init views
                 break;
             default:
                 throw new IllegalArgumentException("Unknow role of player!");
