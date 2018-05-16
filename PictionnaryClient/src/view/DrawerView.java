@@ -49,6 +49,7 @@ public class DrawerView extends VBox implements Observer {
         word.setAlignment(Pos.CENTER);
         word.setMaxWidth(Double.MAX_VALUE);
         word.setFont(new Font("Berlin Sans FB", 17));
+        baseView.addToWordToGuessBox(word);
     }
 
     @Override
@@ -59,7 +60,6 @@ public class DrawerView extends VBox implements Observer {
                 switch (msg.getType()) {
                     case GAME_INIT:
                         word.setText((String) msg.getContent());
-                        baseView.addToWordToGuessBox(word);
                         break;
                     case PROFILE:
                         //TODO check profile infos 
