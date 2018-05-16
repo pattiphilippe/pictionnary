@@ -14,8 +14,10 @@ public class GameDto extends EntityDto<Integer> {
     private final Date gEndTime;
     private final int gStopPlayer;
     private final int playerIdSel;
+    private final int gWord;
+    private final String gTableName;
 
-    public GameDto(int gId, int gDrawer, int gPartner, Date gStartTime, Date gEndTime, int gStopPlayer, int playerIdSel) {
+    public GameDto(int gId, int gDrawer, int gPartner, Date gStartTime, Date gEndTime, int gStopPlayer, int playerIdSel, int gWord, String gTableName) {
         id = gId;
         this.gDrawer = gDrawer;
         this.gPartner = gPartner;
@@ -23,14 +25,16 @@ public class GameDto extends EntityDto<Integer> {
         this.gEndTime = gEndTime;
         this.gStopPlayer = gStopPlayer;
         this.playerIdSel = playerIdSel;
+        this.gWord = gWord;
+        this.gTableName = gTableName;
     }
 
     public GameDto(int id, boolean gameIdOverPlayerIdSel) {
-        this(gameIdOverPlayerIdSel ? id : 0, 0, 0, null, null, 0, gameIdOverPlayerIdSel ? 0 : id);
+        this(gameIdOverPlayerIdSel ? id : 0, 0, 0, null, null, 0, gameIdOverPlayerIdSel ? 0 : id, 0, null);
     }
 
-    public GameDto(int drawer, int guesser, Date gStartTime) {
-        this(0, drawer, guesser, gStartTime, null, 0, 0);
+    public GameDto(int drawer, int guesser, Date gStartTime, int word, String tableName) {
+        this(0, drawer, guesser, gStartTime, null, 0, 0, word, tableName);
     }
 
     public GameDto() {
@@ -64,6 +68,14 @@ public class GameDto extends EntityDto<Integer> {
 
     public int getPlayerIdSel() {
         return playerIdSel;
+    }
+
+    public int getWord() {
+        return gWord;
+    }
+
+    public String getTableName() {
+        return gTableName;
     }
 
 }

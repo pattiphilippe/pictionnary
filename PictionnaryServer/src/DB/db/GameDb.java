@@ -7,7 +7,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-//TODO interface for DBManagement with CRUD
 /**
  *
  * @author G43197
@@ -33,7 +32,9 @@ public class GameDb {
                     + " gPartner=?,"
                     + " gStartTime=?,"
                     + " gEndTime=?,"
-                    + " gStopPlayer=? "
+                    + " gStopPlayer=?,"
+                    + " gWord=?,"
+                    + " gTable=? "
                     + "where gId= ?");
             int i = 0;
             update.setInt(++i, game.getDrawer());
@@ -49,6 +50,8 @@ public class GameDb {
             } else {
                 update.setNull(++i, Types.INTEGER);
             }
+            update.setInt(++i, game.getWord());
+            update.setString(++i, game.getTableName());
             update.setInt(++i, game.getId());
             update.executeUpdate();
         } catch (DbException | SQLException ex) {
@@ -63,8 +66,8 @@ public class GameDb {
             java.sql.PreparedStatement insert;
 
             insert = connexion.prepareStatement("Insert into Game(gId, gDrawer, "
-                    + "gPartner, gStartTime, gEndTime, gStopPlayer) "
-                    + "values(?, ?, ?, ?, ?, ?)");
+                    + "gPartner, gStartTime, gEndTime, gStopPlayer, gWord, gTable) "
+                    + "values(?, ?, ?, ?, ?, ?, ?, ?)");
             insert.setInt(1, num);
             insert.setInt(2, game.getDrawer());
             insert.setInt(3, game.getPartner());
@@ -79,6 +82,8 @@ public class GameDb {
             } else {
                 insert.setNull(6, Types.INTEGER);
             }
+            insert.setInt(7, game.getWord());
+            insert.setString(8, game.getTableName());
             insert.execute();
             return num;
         } catch (DbException | SQLException ex) {
@@ -91,7 +96,7 @@ public class GameDb {
         ArrayList<GameDto> al = new ArrayList<>();
         try {
             String query = "Select "
-                    + "gId, gDrawer, gPartner, gStartTime, gEndTime, gStopPlayer "
+                    + "gId, gDrawer, gPartner, gStartTime, gEndTime, gStopPlayer, gWord, gTable "
                     + " FROM Game ";
             java.sql.Connection connexion = DBManager.getConnection();
             java.sql.PreparedStatement stmt;
@@ -145,7 +150,8 @@ public class GameDb {
             while (rs.next()) {
                 al.add(new GameDto(rs.getInt("gId"), rs.getInt("gDrawer"),
                         rs.getInt("gPartner"), rs.getTime("gStartTime"),
-                        rs.getTime("gEndTime"), rs.getInt("gStopPlayer"), 0));
+                        rs.getTime("gEndTime"), rs.getInt("gStopPlayer"), 0,
+                        rs.getInt("gWord"), rs.getString("gTable")));
             }
         } catch (SQLException eSQL) {
             eSQL.printStackTrace();

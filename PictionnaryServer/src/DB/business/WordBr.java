@@ -23,6 +23,17 @@ public class WordBr {
         }
     }
 
+    static WordDto findByName(String word) throws DbBusinessException {
+        Collection<WordDto> result = find(new WordDto(word));
+        if (result.size() < 1) {
+            throw new DbBusinessException("No word found with given name : " + word);
+        } else if (result.size() > 1) {
+            throw new DbBusinessException("Multiples words found with given word : " + word);
+        } else {
+            return result.iterator().next();
+        }
+    }
+
     static Collection<WordDto> findAll() throws DbBusinessException {
         try {
             return WordDb.getAllWords();

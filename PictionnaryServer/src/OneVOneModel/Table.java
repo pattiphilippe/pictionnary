@@ -23,7 +23,7 @@ public class Table extends Model {
         this.id = 0;
         this.tableName = tableName;
         this.guesses = new ArrayList<>();
-        this.wordToGuess = Words.random();
+        this.wordToGuess = wordToGuess;
         this.state = WAITING_FOR_PARTNER;
         playerNames = new String[2];
         playerNames[0] = drawer.getUsername();
@@ -130,7 +130,7 @@ public class Table extends Model {
         if (player.getRole() != PlayerRole.GUESSER) {
             throw new GameException("Only the guesser can guess the word");
         }
-        if (wordToGuess.equals(guess.toLowerCase())) {
+        if (wordToGuess.toLowerCase().equals(guess.toLowerCase())) {
             state = WON;
         }
         guesses.add(guess);

@@ -91,13 +91,9 @@ public class MultiPlayerModel extends MultiPlayerFacade implements Observer {
             throw new GameException("Player not on any table");
         }
         t.addGuesser(p);
-        t.setId(AdminFacade.createTable(playerName, t.getPartner(p)));
+        t.setId(AdminFacade.createTable(playerName, t.getPartner(p), t.getWordToGuess(), t.getTableName()));
         setChanged();
         notifyObservers(p);
-
-        //TODO or dto?
-        //TODO AdminFacade.saveTable(t);
-        // save t to db
     }
 
     @Override
@@ -119,10 +115,6 @@ public class MultiPlayerModel extends MultiPlayerFacade implements Observer {
                 notifyObservers(p);
             }
         }
-
-        //TODO or dto?
-        //TODO AdminFacade.updateTable(t);
-        // update t to db
     }
 
     @Override
@@ -130,11 +122,6 @@ public class MultiPlayerModel extends MultiPlayerFacade implements Observer {
         Player p = players.get(playerName);
         Table t = p.getTable();
         t.guess(p, guess);
-        //TODO if (t.isFinished()) {
-        //TODO or dto ?
-        //TODO AdminFacade.updateTable(t);
-        //update t to db
-        //}
     }
 
     @Override
@@ -160,9 +147,6 @@ public class MultiPlayerModel extends MultiPlayerFacade implements Observer {
 
     @Override
     public void updateUsername(String oldUsername, String newUsername) throws GameException {
-        //TODO implement
-        //TODO setChanged();
-        //TODO notifyObservers(p);
         throw new GameException("Update username Unsupported yet!");
     }
 
