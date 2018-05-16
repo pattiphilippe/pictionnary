@@ -89,4 +89,8 @@ public class BasePictionnaryView extends BorderPane {
         gameState.setText(state);
     }
 
+    void clearValues() {
+        guesses.getItems().clear();
+    }
+
 }

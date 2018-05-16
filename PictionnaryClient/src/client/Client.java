@@ -17,6 +17,7 @@ import message.MessageGuess;
 import message.MessageJoin;
 import message.Type;
 import message.MessageProfile;
+import message.util.GuessUpdate;
 import message.util.Table;
 import pictionnary.drawingPane.DrawingInfos;
 
@@ -129,7 +130,7 @@ public class Client extends Model {
 
     @Override
     public void guess(String guess) throws IOException {
-        sendToServer(new MessageGuess(guess));
+        sendToServer(new MessageGuess(new GuessUpdate(guess, null)));
     }
 
     @Override
@@ -160,6 +161,7 @@ public class Client extends Model {
         }
     }
 
+    @Override
     public void drawLine() throws IOException {
         sendToServer(new MessageClearDraw());
     }

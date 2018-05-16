@@ -1,15 +1,17 @@
 package message;
 
+import message.util.GuessUpdate;
+
 /**
  *
  * @author Philippe
  */
 public class MessageGuess implements Message {
 
-    private final String guess;
+    private final GuessUpdate guessUpdate;
 
-    public MessageGuess(String guess) {
-        this.guess = guess;
+    public MessageGuess(GuessUpdate guessUpdate) {
+        this.guessUpdate = guessUpdate;
     }
 
     @Override
@@ -19,7 +21,7 @@ public class MessageGuess implements Message {
 
     @Override
     public Object getContent() {
-        return guess;
+        return guessUpdate;
     }
 
 }

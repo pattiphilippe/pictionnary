@@ -3,10 +3,12 @@ package MultiPModel;
 import DB.business.DbBusinessException;
 import DB.db.DbException;
 import OneVOneModel.GameException;
+import OneVOneModel.Model;
 import OneVOneModel.PlayerRole;
 import OneVOneModel.Table;
 import java.util.List;
 import java.util.Observable;
+import message.util.Prop;
 
 /**
  * Facade of a multiplayer Pictionnary game, with multiples tables that can have
@@ -41,4 +43,8 @@ public abstract class MultiPlayerFacade extends Observable {
     public abstract String getPartnerUsername(String username);
 
     public abstract PlayerRole getRole(String username) throws DbException;
+
+    public abstract int getAvgWrongProps(Model t) throws DbBusinessException;
+
+    public abstract List<Prop> getPropsWithCount(Model t) throws DbBusinessException;
 }

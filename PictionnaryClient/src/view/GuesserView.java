@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import message.Message;
 import message.util.GameState;
+import message.util.GuessUpdate;
 import pictionnary.drawingPane.DrawingInfos;
 import pictionnary.drawingPane.DrawingPane;
 
@@ -70,7 +71,8 @@ public class GuesserView extends VBox implements Observer {
                         drawingPane.clearPane();
                         break;
                     case GUESS:
-                        baseView.addGuess((String) msg.getContent());
+                        GuessUpdate guessUpdate = (GuessUpdate) msg.getContent();
+                        baseView.addGuess((String) guessUpdate.getLastGuess());
                         break;
                     case GAME_STATE:
                         // only redundant code in drawer and guesser View 
@@ -82,5 +84,10 @@ public class GuesserView extends VBox implements Observer {
                 }
             });
         }
+    }
+
+    public void clearValues() {
+        guess.setText("");
+        baseView.clearValues();
     }
 }

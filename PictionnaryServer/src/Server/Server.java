@@ -41,6 +41,8 @@ import message.MessageWon;
 import static message.Type.GAME_INIT;
 import message.util.PlayerRole;
 import message.util.GameState;
+import message.util.GuessUpdate;
+import message.util.InitInfos;
 import message.util.Stats;
 
 /**
@@ -169,7 +171,8 @@ public class Server extends AbstractServer implements Observer {
                     draw(client, message);
                     break;
                 case GUESS:
-                    model.guess((String) client.getInfo(USERNAME_MAPINFO), (String) message.getContent());
+                    GuessUpdate guessUpdate = (GuessUpdate) message.getContent();
+                    model.guess((String) client.getInfo(USERNAME_MAPINFO), (String) guessUpdate.getLastGuess());
                     break;
                 case EXIT_TABLE:
                     model.leaveTable((String) client.getInfo(USERNAME_MAPINFO));
@@ -206,12 +209,22 @@ public class Server extends AbstractServer implements Observer {
                     Message msg = null;
                     switch (t.getState()) {
                         case INIT:
-                            msg = new MessageGameInit(t.getWordToGuess());
+                            int avgWrongProps;
+                            try {
+                                avgWrongProps = this.model.getAvgWrongProps(t);
+                                msg = new MessageGameInit(new InitInfos(t.getWordToGuess(), avgWrongProps));
+                            } catch (DbBusinessException ex) {
+                                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                             break;
                         case IN_GAME:
                             String lastGuess = t.getLastGuess();
                             if (lastGuess != null) {
-                                msg = new MessageGuess(lastGuess);
+                                try {
+                                    msg = new MessageGuess(new GuessUpdate(lastGuess, model.getPropsWithCount(t)));
+                                } catch (DbBusinessException ex) {
+                                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             }
                             break;
                         case WON:

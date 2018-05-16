@@ -10,6 +10,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import message.Message;
 import message.util.GameState;
+import message.util.GuessUpdate;
+import message.util.InitInfos;
 import pictionnary.drawingPane.DrawingPaneControl;
 
 /**
@@ -22,6 +24,7 @@ public class DrawerView extends VBox implements Observer {
     private final Label word;
     private final DrawingPaneControl drawingPane;
     private final Controller controller;
+    private final Label guessedIn;
 
     public DrawerView(Controller controller) {
         word = new Label();
@@ -50,6 +53,11 @@ public class DrawerView extends VBox implements Observer {
         word.setMaxWidth(Double.MAX_VALUE);
         word.setFont(new Font("Berlin Sans FB", 17));
         baseView.addToWordToGuessBox(word);
+        guessedIn = new Label();
+        guessedIn.setAlignment(Pos.CENTER);
+        guessedIn.setMaxWidth(Double.MAX_VALUE);
+        guessedIn.setFont(new Font("Berlin Sans FB", 17));
+        baseView.addToWordToGuessBox(guessedIn);
     }
 
     @Override
@@ -59,7 +67,9 @@ public class DrawerView extends VBox implements Observer {
             Platform.runLater(() -> {
                 switch (msg.getType()) {
                     case GAME_INIT:
-                        word.setText((String) msg.getContent());
+                        InitInfos infos = (InitInfos) msg.getContent();
+                        word.setText(infos.getWordToGuess());
+                        guessedIn.setText("Guessed in : " + infos.getAvgWrongGuesses());
                         break;
                     case PROFILE:
                         //TODO check profile infos 
@@ -68,7 +78,8 @@ public class DrawerView extends VBox implements Observer {
                         break;
                     case GUESS:
                         // redundant code in drawer and guesser View 
-                        baseView.addGuess((String) msg.getContent());
+                        GuessUpdate guessUpdate = (GuessUpdate) msg.getContent();
+                        baseView.addGuess((String) guessUpdate.getLastGuess());
                         break;
                     case GAME_STATE:
                         // redundant code in drawer and guesser View 
@@ -80,6 +91,11 @@ public class DrawerView extends VBox implements Observer {
                 }
             });
         }
+    }
+
+    public void clearValues() {
+        word.setText("");
+        baseView.clearValues();
     }
 
 }

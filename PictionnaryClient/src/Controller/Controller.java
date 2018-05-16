@@ -20,6 +20,7 @@ import view.DrawerView;
 import view.GuesserView;
 import view.MyAlert;
 import view.StatsView;
+import view.PropsView;
 import view.TableSelection;
 
 /**
@@ -28,7 +29,6 @@ import view.TableSelection;
  */
 public class Controller implements Runnable, Observer {
 
-    //TODO change to model
     private Model client;
     private final Connection connection;
     private final Scene connectionScene;
@@ -44,6 +44,8 @@ public class Controller implements Runnable, Observer {
     private String errorContext;
     private final StatsView statsView;
     private final Stage statsStage;
+    private final PropsView propsView;
+    private final Stage propsStage;
 
     public Controller(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -68,6 +70,10 @@ public class Controller implements Runnable, Observer {
         this.statsStage = new Stage();
         this.statsStage.setScene(new Scene(statsView));
         this.statsStage.getIcons().add(new Image("/Controller/icon.png"));
+        this.propsView = new PropsView(10);
+        this.propsStage = new Stage();
+        this.propsStage.setScene(new Scene(propsView));
+        this.propsStage.getIcons().add(new Image("/Controller/icon.png"));
     }
 
     private void setDialogIcon(Dialog dialog) {
@@ -141,6 +147,7 @@ public class Controller implements Runnable, Observer {
         client.addObserver(drawerView);
         client.addObserver(guesserView);
         client.addObserver(statsView);
+        client.addObserver(propsView);
     }
 
     public void exitTable() {
@@ -192,12 +199,20 @@ public class Controller implements Runnable, Observer {
         switch (player.getRole()) {
             case DRAWER:
                 setDrawerView();
+                propsStage.show();
                 break;
             case GUESSER:
                 setGuesserView();
+                propsStage.show();
                 break;
             case NONE:
                 setTablesView();
+                propsView.clearValues();
+                drawerView.clearValues();
+                guesserView.clearValues();
+                if (propsStage.isShowing()) {
+                    propsStage.hide();
+                }
                 //TODO init views
                 break;
             default:
@@ -230,6 +245,9 @@ public class Controller implements Runnable, Observer {
         primaryStage.setScene(connectionScene);
         if (statsStage.isShowing()) {
             statsStage.hide();
+        }
+        if (propsStage.isShowing()) {
+            propsStage.hide();
         }
     }
 

@@ -19,6 +19,7 @@ import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import message.util.Prop;
 
 /**
  * Implements the MultiPlayer facade. Tables are stored in tables Hashmap and in
@@ -223,6 +224,19 @@ public class MultiPlayerModel extends MultiPlayerFacade implements Observer {
         } else {
             throw new DbException("Player unknown!");
         }
+    }
+
+    @Override
+    public int getAvgWrongProps(Model t) throws DbBusinessException {
+        return AdminFacade.getAvgProps(t.getWordToGuess());
+    }
+
+    @Override
+    public List<Prop> getPropsWithCount(Model t) throws DbBusinessException {
+        return AdminFacade.getPropsCountByWord(t.getWordToGuess())
+                .stream()
+                .map(dto -> new Prop(dto.getTxt(), dto.getCount()))
+                .collect(Collectors.toList());
     }
 
 }

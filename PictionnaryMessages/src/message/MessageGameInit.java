@@ -1,5 +1,6 @@
 package message;
 
+import message.util.InitInfos;
 
 /**
  *
@@ -7,10 +8,10 @@ package message;
  */
 public class MessageGameInit implements Message {
 
-    private final String wordToGuess;
+    private final InitInfos infos;
 
-    public MessageGameInit(String wordToGuess) {
-        this.wordToGuess = wordToGuess;
+    public MessageGameInit(InitInfos infos) {
+        this.infos = infos;
     }
 
     @Override
@@ -20,7 +21,7 @@ public class MessageGameInit implements Message {
 
     @Override
     public Object getContent() {
-        return wordToGuess;
+        return infos;
     }
 
 }
